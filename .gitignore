@@ -1,0 +1,4 @@
+/_unversioned/
+.ipynb_checkpoints/
+/venv/
+/dist/
