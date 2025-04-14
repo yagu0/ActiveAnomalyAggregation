@@ -9,8 +9,8 @@ Modules pip and build.
 
 First you need to download the code. One way to do so is to click on the `Code' 
 button on this GitHub page: 
-https://github.com/yagu0/ActiveAnomalyAggregation/tree/main  
-Download the code either from GitHub page or by cloning the repository:
+https://github.com/yagu0/ActiveAnomalyAggregation/tree/main and download the .zip file. Another way to do so
+is to clone the repository:
 
     ```git clone https://github.com/yagu0/ActiveAnomalyAggregation.git```
 
