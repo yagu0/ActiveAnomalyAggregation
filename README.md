@@ -3,14 +3,20 @@
 ## Requirements
 
 Python 3 (at least 3.8, up to 3.12 included).
-Modules pip and build.
+Modules pip or build depending on how you decide to install the library.
 
 ## Installation
 
-First you need to download the code. One way to do so is to click on the `Code' 
-button on this GitHub page: 
-https://github.com/yagu0/ActiveAnomalyAggregation/tree/main and download the .zip file. Another way to do so
-is to clone the repository:
+Here are a couple of different ways to download and install the package from GitHub. 
+
+### Method 1
+
+Click on the `Code' button on this GitHub page: 
+https://github.com/yagu0/ActiveAnomalyAggregation/tree/main and download the .zip file. 
+
+
+
+
 
     ```git clone https://github.com/yagu0/ActiveAnomalyAggregation.git```
 
