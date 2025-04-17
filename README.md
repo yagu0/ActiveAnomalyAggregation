@@ -15,7 +15,6 @@ In theory the easiest way to download the library is to open a terminal window o
 
     pip install git+https://github.com/yagu0/ActiveAnomalyAggregation.git
 
-[[THIS CURRENTLY REQUIRES YOUR USER PASSWORD BENJAMIN PROBABLY BECAUSE ITS STILL NOT PUBLIC?]]
 
 If you want the library to be accessible to one specific Python environment you have created locally,
 the basic rule is that you need to activate that environment before running the pip command above. On
