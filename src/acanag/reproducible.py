@@ -4,7 +4,7 @@
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
-from modAL.uncertainty import * 
+from modAL.models import ActiveLearner
 
 ###################################################################################################
 ###################################################################################################
