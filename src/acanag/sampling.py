@@ -647,7 +647,7 @@ def multivariate_gaussian_sampling_with_epsilon_balls_rejection(n_data, tau, a_l
 
 ########################################################################################
 
-def multivariate_gaussian_sampling_with_anomaly_gaussians(n_data, tau, a_list, anomaly_cov_list, nominal_mean, nominal_cov):
+def multivariate_gaussian_sampling_with_anomaly_gaussians(n_data, tau, a_list, anomaly_cov_list, nominal_mean, nominal_cov, L):
     """
     Generate nominal samples using a multivariate Gaussian distribution for nominals,
     with anomalies sampled from Gaussian distributions centered at given means and covariances.
@@ -659,24 +659,18 @@ def multivariate_gaussian_sampling_with_anomaly_gaussians(n_data, tau, a_list, a
     - anomaly_cov_list: List of LxL covariance matrices for anomalies.
     - nominal_mean: L-dimensional mean vector for the Gaussian distribution of nominal data.
     - nominal_cov: LxL covariance matrix for the Gaussian distribution of nominal data.
+    - L: Dimensionality of the data.
 
     Returns:
     - X: np.ndarray of sampled points (size: n_data x L).
     - Y: np.ndarray of corresponding labels (1 for anomalies, 0 for nominal points).
     """
-
-    # Ensure a_list is not empty
-    if len(a_list) == 0:
-        raise ValueError("a_list must contain at least one value.")
-
-    # Set L from a_list[0]
-    L = len(a_list[0])
-
+    
     # Validate that a_list contains the correct number of dimensions
     for center in a_list:
         if len(center) != L:
             raise ValueError(f"Each element in a_list must be {L}-dimensional.")
-
+        
     # Ensure anomaly_cov_list contains numpy arrays and validate their shapes
     anomaly_cov_list = [
         np.array(cov) if not isinstance(cov, np.ndarray) else cov for cov in anomaly_cov_list
@@ -684,29 +678,29 @@ def multivariate_gaussian_sampling_with_anomaly_gaussians(n_data, tau, a_list, a
     for cov in anomaly_cov_list:
         if cov.shape != (L, L):
             raise ValueError(f"Each covariance matrix must be {L}x{L}.")
-
+    
     # Ensure nominal covariance matrix is positive semi-definite (for Gaussian distributions)
     if not np.all(np.linalg.eigvals(nominal_cov) >= 0):
         raise ValueError("nominal_cov must be positive semi-definite.")
-
+    
     # Ensure anomaly covariance matrices are positive semi-definite
     for cov in anomaly_cov_list:
         if not np.all(np.linalg.eigvals(cov) >= 0):
             raise ValueError("An anomaly covariance matrix is not positive semi-definite.")
-
+    
     # Determine the number of anomalies
     n_anomalies = np.random.binomial(n_data, tau)
-    if n_anomalies == 0:
+    if n_anomalies == 0 and tau != 0:
         raise ValueError("There are no true anomalies. Try with a larger tau or n_data.")
-
+    
     # Randomly permute indices and split into anomalies and nominals
     permute_indices = np.random.permutation(n_data)
     anomaly_indices = permute_indices[:n_anomalies]
     nominal_indices = permute_indices[n_anomalies:]
-
+    
     # Initialize the data array (L dimensions)
     X = np.empty((n_data, L))
-
+    
     # Determine how many anomalies each center should handle
     n_centers = len(a_list)
     n_per_center = n_anomalies // n_centers
@@ -725,12 +719,12 @@ def multivariate_gaussian_sampling_with_anomaly_gaussians(n_data, tau, a_list, a
 
     # Assign nominal points by sampling from the multivariate Gaussian distribution
     X[nominal_indices] = np.random.multivariate_normal(nominal_mean, nominal_cov, len(nominal_indices))
-
+    
     # Create labels for anomalies and nominals
     Y = np.empty(n_data, dtype=int)
     Y[anomaly_indices] = 1
     Y[nominal_indices] = 0
-
+    
     return X, Y
 
 ########################################################################################
