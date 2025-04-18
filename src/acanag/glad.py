@@ -1,4 +1,5 @@
 import tensorflow as tf
+from tensorflow.keras import Sequential
 
 def build_neural_network(data_dimension, M, l2_lambda=0.01):
 
