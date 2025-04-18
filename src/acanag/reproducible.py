@@ -544,6 +544,35 @@ def random_sampling(classifier, X_pool, pc_active):
 ###################################################################################################
 
 
+def new_custom_loss_2(X_lab, Y_lab, q_tau_tm1, all_labeled_scores, model, X_so_far, mylambda=1, b=0.5):
+    
+    """
+    Optimized version of GLAD's custom loss using vectorized operations.
+    """
+
+    # Convert Y_lab to {-1, 1}
+    Y_lab_tensor = tf.convert_to_tensor(2 * np.array(Y_lab) - 1, dtype=tf.float32)
+
+    # Convert all_labeled_scores to tensor
+    scores_tensor = tf.convert_to_tensor(all_labeled_scores, dtype=tf.float32)
+
+    # Compute all weights in one forward pass
+    w_tensor = model(X_lab)  # Shape: (n_labeled, M)
+
+    # Compute weighted scores (batch matmul equivalent to inner product row-wise)
+    weighted_scores = tf.reduce_sum(w_tensor * scores_tensor, axis=1)  # Shape: (n_labeled,)
+
+    # Compute first term using vectorized hinge-like loss
+    hinge_losses = tf.maximum(0.0, Y_lab_tensor * (q_tau_tm1 - weighted_scores))
+    first_term = tf.reduce_mean(hinge_losses)
+
+    # Second term: cross-entropy on X_so_far
+    outputs = model(X_so_far)  # Shape: (n_so_far, M)
+    binary_loss_fn = custom_binary_crossentropy_loss(b, mylambda)
+    second_term = tf.reduce_mean(binary_loss_fn(None, outputs)) * mylambda
+
+    # Total loss
+    return first_term + second_term
 
 
 
