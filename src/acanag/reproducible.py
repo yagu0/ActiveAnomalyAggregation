@@ -523,9 +523,8 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
     return X_old, X_lab, all_labeled_scores, indices_to_expert, learned_model, supervised_indices 
     
 
-#########################################################################################
-# Other functions  ######################################################################
-#########################################################################################
+##################################################################################################
+##################################################################################################
 
 
 def random_sampling(classifier, X_pool, pc_active):
@@ -533,8 +532,6 @@ def random_sampling(classifier, X_pool, pc_active):
     n_return = max(int(np.floor(pc_active*n_samples)),1)
     query_idx = np.random.choice(range(n_samples),size=n_return,replace=False)
     return query_idx, X_pool[query_idx] 
-
-
 
 
 ###################################################################################################
