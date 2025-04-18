@@ -6,6 +6,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from modAL.models import ActiveLearner
 from modAL.uncertainty import * 
+import tensorflow as tf
 
 ###################################################################################################
 ###################################################################################################
