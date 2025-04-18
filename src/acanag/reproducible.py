@@ -2,7 +2,8 @@
 ## for the paper's plot outputs.
 
 import numpy as np
-from modAL.uncertainty import * 
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 
 ###################################################################################################
 ###################################################################################################
