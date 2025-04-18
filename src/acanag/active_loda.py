@@ -1,4 +1,5 @@
 import numpy as np
+import cvxpy as cp
 
 def optimize_w_2(H_A, H_N, q_tau, C_A=100, C_eta=1000):
     
