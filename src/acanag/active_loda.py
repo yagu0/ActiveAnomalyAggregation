@@ -1,6 +1,6 @@
 import numpy as np
 
-def optimize_w(H_A, H_N, q_tau, C_A=100, C_eta=1000):
+def optimize_w_2(H_A, H_N, q_tau, C_A=100, C_eta=1000):
     
     """
     What we call "active-LODA" is the method described in the article below:
@@ -33,54 +33,46 @@ def optimize_w(H_A, H_N, q_tau, C_A=100, C_eta=1000):
     - w: The optimal weights vector of length M.
     """
     
-    M = H_A.shape[1]  # Length of each z_i (dimension of w)
-    n_A = H_A.shape[0]  # Number of elements in H_A
-    n_N = H_N.shape[0]  # Number of elements in H_N
-    
-    c1 = C_A/n_A
-    c2 = 1/n_N
+    M = H_A.shape[1]
+    n_A = H_A.shape[0]
+    n_N = H_N.shape[0]
+
+    c1 = C_A / n_A
+    c2 = 1 / n_N
     c3 = C_eta
-    
-    # Initialize w_M: Vector where each entry is 1/sqrt(M)
+
     w_M = np.ones(M) / np.sqrt(M)
-    
+
     # Decision variable for w
     w = cp.Variable(M)
 
     # Slack variables eta_{ij} for each pair (z_i, z_j)
     eta = cp.Variable((n_A, n_N), nonneg=True)
 
-    # Define the loss function L
-    def loss(z, y, w, q_tau):
-        wTz = w @ z  # Inner product w^T * z
-        return cp.max(cp.hstack([
-            cp.multiply(y, cp.pos(q_tau - wTz)),  # Loss for y_i = 1
-            cp.multiply(1 - y, cp.pos(wTz - q_tau))  # Loss for y_i = 0
-        ]))
+    # === Vectorized Loss Computation ===
+    scores_H_A = H_A @ w            # shape (n_A,)
+    scores_H_N = H_N @ w            # shape (n_N,)
 
-    # Compute losses for H_A and H_N
-    loss_H_A = cp.sum([loss(z, 1, w, q_tau) for z in H_A])
-    loss_H_N = cp.sum([loss(z, 0, w, q_tau) for z in H_N])
+    loss_H_A = cp.sum(cp.pos(q_tau - scores_H_A))  # loss when y = 1
+    loss_H_N = cp.sum(cp.pos(scores_H_N - q_tau))  # loss when y = 0
 
-    # New soft constraints for eta_{ij}
-    soft_constraints = []
-    for i, z_i in enumerate(H_A):
-        for j, z_j in enumerate(H_N):
-            # Soft constraint: w^T * (z_i - z_j) + eta_{ij} >= 0
-            soft_constraints.append(w @ (z_i - z_j) + eta[i, j] >= 0)
-    
+    # === Vectorized Soft Constraints ===
+    z_diff = H_A[:, np.newaxis, :] - H_N[np.newaxis, :, :]     # shape (n_A, n_N, M)
+    z_diff_flat = z_diff.reshape(-1, M)                        # shape (n_A*n_N, M)
+    eta_flat = cp.reshape(eta, (n_A * n_N,))                   # shape (n_A*n_N,)
+
+    soft_constraints = [z_diff_flat @ w + eta_flat >= 0]
+
+    # === Objective Function ===
     objective = (
         c1 * loss_H_A
         + c2 * loss_H_N
         + c3 * cp.sum(eta)
-        + (1/10)*c3*M*((1+n_A)*(1+n_N))*cp.sum_squares(w - w_M)  # L2 regularization
+        +  c3 * (1 + n_A) * (1 + n_N) * cp.sum_squares(w - w_M)
     )
 
-    # Problem definition
+    # Problem definition and solve
     problem = cp.Problem(cp.Minimize(objective), soft_constraints)
-
-    # Solve the problem
     result = problem.solve()
 
-    # Output results: Return the optimal w
     return w.value
