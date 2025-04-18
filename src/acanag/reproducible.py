@@ -1,6 +1,8 @@
 ## A bunch of functions required only to run the reproducible Jupyter Notebook 
 ## for the paper's plot outputs.
 
+import numpy as np
+
 ###################################################################################################
 ###################################################################################################
 
