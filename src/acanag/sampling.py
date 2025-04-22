@@ -728,18 +728,19 @@ def multivariate_gaussian_sampling_with_anomaly_gaussians(n_data, tau, a_list, a
 
 ########################################################################################
 
-def sample_uniform_with_anomalies_in_ball(n_data, tau, a_list, epsilon, radius=1.0):
+def sample_uniform_with_anomalies_in_ball(n_data, tau, a_list, epsilon, L, radius=1.0):
     """
     Generate samples uniformly within an L-dimensional ball (nominal data) 
     and smaller balls (anomalies) with rejection sampling for nominal points.
-
+    
     Parameters:
     - n_data: Total number of samples.
     - tau: Fraction of anomalies (0 <= tau <= 1).
     - a_list: List of L-dimensional centers for anomaly balls. Length of a_list is the number of anomaly balls.
     - epsilon: Radius of each anomaly ball.
+    - L: Dimensionality of the space.
     - radius: Radius of the large nominal ball.
-
+    
     Returns:
     - X: np.ndarray of sampled points (n_data x L).
     - Y: np.ndarray of corresponding labels (1 for anomalies, 0 for nominal points).
@@ -750,13 +751,6 @@ def sample_uniform_with_anomalies_in_ball(n_data, tau, a_list, epsilon, radius=1
         direction /= np.linalg.norm(direction)
         distance = r * (np.random.rand() ** (1 / dim))
         return center + direction * distance
-
-    # Ensure a_list is not empty
-    if len(a_list) == 0:
-        raise ValueError("a_list must contain at least one value.")
-
-    # Set L from a_list[0]
-    L = len(a_list[0])
 
     # Ensure the anomaly centers are valid
     for center in a_list:
