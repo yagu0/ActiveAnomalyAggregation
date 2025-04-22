@@ -392,12 +392,12 @@ def multivariate_gaussian_sampling_with_epsilon_balls(n_data, tau, a_list, epsil
 
 ########################################################################################
 
-def uniform_sampling_point_mass_with_epsilon_n_dim_rejection(n_data, tau, a_list, epsilon, lower=0, upper=1):
+def uniform_sampling_point_mass_with_epsilon_n_dim_rejection(n_data, tau, a_list, epsilon, L, lower=0, upper=1):
     """
     Generate nominal samples from a uniform distribution, with anomalies distributed
     around a set of centers defined by a_list. Anomalies are distributed in uniform
     volumes (L-dimensional cubes) around each center with the size of the volume determined by epsilon.
-
+    
     Nominal points are uniformly distributed, but they are rejected if they fall inside
     any of the volumes around the anomaly centers.
 
@@ -408,6 +408,7 @@ def uniform_sampling_point_mass_with_epsilon_n_dim_rejection(n_data, tau, a_list
     - epsilon: The size of the volume around each center, determining the width of the anomaly distribution in each dimension.
     - lower: Lower bound of the range for nominal data (for validation).
     - upper: Upper bound of the range for nominal data (for validation).
+    - L: Dimensionality of the space.
 
     Returns:
     - X: np.ndarray of sampled points (n_data x L).
@@ -417,9 +418,6 @@ def uniform_sampling_point_mass_with_epsilon_n_dim_rejection(n_data, tau, a_list
     # Ensure a_list is not empty
     if len(a_list) == 0:
         raise ValueError("a_list must contain at least one value.")
-
-    # Set L from a_list[0]
-    L = len(a_list[0])
 
     # Ensure that epsilon is a positive value
     if epsilon <= 0:
@@ -446,13 +444,14 @@ def uniform_sampling_point_mass_with_epsilon_n_dim_rejection(n_data, tau, a_list
                 abs(center_1[dim] - center_2[dim]) < 2 * epsilon
                 for dim in range(L)
             )
-
+            
             if overlap:
                 raise ValueError(f"The volumes around centers {a_list[i]} and {a_list[j]} overlap. "
                                  f"Ensure that the centers are at least {2 * epsilon} apart in every dimension.")
 
     # Calculate the number of anomalies
     n_anomalies = np.random.binomial(n_data, tau)
+    
     if n_anomalies == 0:
         raise ValueError("There are no true anomalies. Try with a larger tau or n_data.")
 
