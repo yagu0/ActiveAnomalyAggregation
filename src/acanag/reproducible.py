@@ -7,6 +7,7 @@ from sklearn.ensemble import RandomForestClassifier
 from modAL.models import ActiveLearner
 from modAL.uncertainty import * 
 import tensorflow as tf
+from .glad import custom_binary_crossentropy_loss
 
 ###################################################################################################
 ###################################################################################################
