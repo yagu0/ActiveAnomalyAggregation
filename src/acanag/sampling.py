@@ -809,7 +809,7 @@ def sample_uniform_with_anomalies_in_ball(n_data, tau, a_list, epsilon, L, radiu
 
 ###################################################################################
 
-def multivariate_gaussian_sampling_with_uniform_surface_anomalies(n_data, tau, radius, nominal_mean, nominal_cov):
+def multivariate_gaussian_sampling_with_uniform_surface_anomalies(n_data, tau, radius, nominal_mean, nominal_cov, L=3):
     """
     Generate nominal samples using a multivariate Gaussian distribution for nominals,
     and anomalies uniformly on the surface of an L-dimensional sphere (or hypersphere) with a given radius.
@@ -820,50 +820,47 @@ def multivariate_gaussian_sampling_with_uniform_surface_anomalies(n_data, tau, r
     - radius: Radius of the hypersphere where anomalies will be located.
     - nominal_mean: L-dimensional mean vector for the Gaussian distribution of nominal data.
     - nominal_cov: LxL covariance matrix for the Gaussian distribution of nominal data.
+    - L: Dimensionality of the data.
 
     Returns:
     - X: np.ndarray of sampled points (size: n_data x L).
     - Y: np.ndarray of corresponding labels (1 for anomalies, 0 for nominal points).
     """
-
-    # Set L from nominal_mean
-    L = len(nominal_mean)
-
-    # Validate nominal_cov shapes
+    # Validate nominal_mean and nominal_cov shapes
     if nominal_mean.shape != (L,):
         raise ValueError(f"nominal_mean must be a vector of length {L}.")
     if nominal_cov.shape != (L, L):
         raise ValueError(f"nominal_cov must be a {L}x{L} matrix.")
-
+    
     # Ensure covariance matrix is positive semi-definite
-    if np.any(np.linalg.eigvals(nominal_cov) < 0):
+    if not np.all(np.linalg.eigvals(nominal_cov) >= 0):
         raise ValueError("nominal_cov must be positive semi-definite.")
 
     # Determine the number of anomalies
     n_anomalies = int(np.round(n_data * tau))
     if n_anomalies == 0:
         raise ValueError("There are no true anomalies. Try with a larger tau or n_data.")
-
+    
     # Determine the number of nominal samples
     n_nominals = n_data - n_anomalies
-
+    
     # Sample nominal points from the multivariate Gaussian distribution
     X_nominals = np.random.multivariate_normal(nominal_mean, nominal_cov, n_nominals)
-
+    
     # Generate anomalies uniformly on the surface of a hypersphere
     # Step 1: Sample from a standard normal distribution
     anomalies = np.random.normal(size=(n_anomalies, L))
-
+    
     # Step 2: Normalize to unit length (ensures uniform distribution)
     norms = np.linalg.norm(anomalies, axis=1, keepdims=True)
     anomalies = anomalies / norms  # Points are now on the surface of a unit sphere
-
+    
     # Step 3: Scale anomalies to the desired radius
     anomalies *= radius
 
     # Combine nominal and anomaly points
     X = np.vstack((X_nominals, anomalies))
-
+    
     # Create labels: 0 for nominals, 1 for anomalies
     Y = np.zeros(n_data, dtype=int)
     Y[n_nominals:] = 1  # Last n_anomalies points are anomalies
@@ -872,5 +869,5 @@ def multivariate_gaussian_sampling_with_uniform_surface_anomalies(n_data, tau, r
     indices = np.random.permutation(n_data)
     X = X[indices]
     Y = Y[indices]
-
+    
     return X, Y
