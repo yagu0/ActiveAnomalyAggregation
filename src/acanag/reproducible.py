@@ -582,7 +582,24 @@ def new_custom_loss_2(X_lab, Y_lab, q_tau_tm1, all_labeled_scores, model, X_so_f
 ###################################################################################################
 ###################################################################################################
 
+def build_random_score_models(M=50):
+    """
+    Build a dictionary of M RandomScore models, each with a unique name.
 
+    Parameters:
+    - M: Number of RandomScore models to generate (default=50).
+
+    Returns:
+    - models: Dictionary of RandomScore models, each with a unique name.
+    """
+    models = {}
+    
+    # Create M RandomScore models and add them to the dictionary
+    for m_idx in range(M):
+        model = RandomScore()
+        models[f'model_{m_idx + 1}'] = model
+    
+    return models
 
 
 
