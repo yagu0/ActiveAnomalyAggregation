@@ -1409,6 +1409,105 @@ def build_custom_score_models2(
 ###################################################################################################
 
 
+def generate_time_series(my_tau, d, n, 
+                         mean_G1=None, mean_G2=None, mean_G3=None, 
+                         cov_G1=None, cov_G2=None, cov_G3=None, 
+                         c=1,c_anom = 1):
+    """
+    Generates a time series with values drawn from three multivariate Gaussians G1, G2, and G3.
+    
+    Parameters:
+    - tau: Probability of selecting G2.
+    - d: Data dimensionality.
+    - n: Number of data points to generate.
+    - mean_G1, mean_G2, mean_G3: Means of the Gaussians (default: [1,...,1], [2,...,2], [3,...,3]).
+    - cov_G1, cov_G2, cov_G3: Covariance matrices (default: c * Identity matrix).
+    - c: Scaling factor for identity covariance matrices (default: 1).
+
+    Returns:
+    - time_series: Generated time series (n x d array).
+    - Y: Labels indicating whether each point came from G2 (1) or from G1/G3 (0).
+    """
+    # Default mean values
+    if mean_G1 is None:
+        mean_G1 = np.ones(d)
+    if mean_G2 is None:
+        mean_G2 = np.full(d, 2)
+    if mean_G3 is None:
+        mean_G3 = np.full(d, 3)
+    
+    # Default covariance matrices
+    if cov_G1 is None:
+        cov_G1 = c * np.eye(d)
+    if cov_G2 is None:
+        cov_G2 = c_anom * np.eye(d)
+    if cov_G3 is None:
+        cov_G3 = c * np.eye(d)
+    
+    # Initialize time series storage
+    time_series = np.zeros((n, d))
+    
+    # Initialize Y labels
+    Y = np.empty(n, dtype=int)
+
+    # First value is generated independently
+    probabilities = [(1 - my_tau) / 2, my_tau, (1 - my_tau) / 2]
+    choice = np.random.choice([1, 2, 3], p=probabilities)
+
+    if choice == 1:
+        temp_value = np.random.multivariate_normal(mean_G1, cov_G1)
+        Y[0] = 0
+    elif choice == 2:
+        temp_value = np.random.multivariate_normal(mean_G2, cov_G2)
+        Y[0] = 1
+    else:
+        temp_value = np.random.multivariate_normal(mean_G3, cov_G3)
+        Y[0] = 0
+
+    if np.random.rand() < 0.5:
+        temp_value *= -1  # Flip sign with probability 0.5
+
+    time_series[0] = temp_value  # First value
+
+    # Generate the rest of the series
+    for i in range(1, n):
+        choice = np.random.choice([1, 2, 3], p=probabilities)
+
+        if choice == 1:
+            temp_value = np.random.multivariate_normal(mean_G1, cov_G1)
+            Y[i] = 0
+        elif choice == 2:
+            temp_value = np.random.multivariate_normal(mean_G2, cov_G2)
+            Y[i] = 1
+        else:
+            temp_value = np.random.multivariate_normal(mean_G3, cov_G3)
+            Y[i] = 0
+
+        if np.random.rand() < 0.5:
+            temp_value *= -1  # Flip sign with probability 0.5
+
+
+        time_series[i] = time_series[i - 1] + temp_value  # Cumulative sum
+
+    return time_series, Y
+
+def plot_time_series(X, Y):
+    n = len(Y)
+    
+    plt.figure(figsize=(12, 6))  # Set figure size
+    #plt.plot(range(n), X, linestyle='-', color='gray', alpha=0.5, label="Time Series")  # Plot the time series
+
+    # Scatter plot with colors based on Y values
+    plt.scatter(range(n), X, c=['blue' if y == 0 else 'red' for y in Y], s=2)
+
+    # Labels and title
+    plt.xlabel("Time Step")
+    plt.ylabel("Value")
+    plt.title("Generated Time Series")
+    plt.legend()
+    plt.grid(True)
+
+    plt.show()
 
 
 ###################################################################################################
