@@ -9,6 +9,7 @@ from modAL.models import ActiveLearner
 from modAL.uncertainty import * 
 import tensorflow as tf
 from .glad import custom_binary_crossentropy_loss
+from .loda_utils import LODA_OAT
 
 ###################################################################################################
 ###################################################################################################
