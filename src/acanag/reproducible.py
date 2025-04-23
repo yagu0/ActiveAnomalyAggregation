@@ -1193,10 +1193,65 @@ class GaussianScoreModel:
         - scores: A 1D array of scores for each row in X.
         """
         return np.random.normal(loc=self.mean, scale=self.std, size=X.shape[0])
+        
+
+###################################################################################################
+###################################################################################################
+
+
+class MixtureGaussianScoreModel:
+    def __init__(self, tau=0.01, nominal_mean=0, nominal_std=1, anomaly_mean=2, anomaly_std=0.1):
+        """
+        Initialize the MixtureGaussianScoreModel with parameters for the nominal and anomaly distributions.
+
+        Parameters:
+        - tau: Probability of sampling from the anomaly distribution.
+        - nominal_mean: Mean of the nominal Gaussian distribution.
+        - nominal_std: Standard deviation of the nominal Gaussian distribution.
+        - anomaly_mean: Mean of the anomaly Gaussian distribution.
+        - anomaly_std: Standard deviation of the anomaly Gaussian distribution.
+        """
+        self.tau = tau
+        self.nominal_mean = nominal_mean
+        self.nominal_std = nominal_std
+        self.anomaly_mean = anomaly_mean
+        self.anomaly_std = anomaly_std
+
+    def fit(self, X):
+        # Placeholder fit method (no action needed for this model).
+        self.X = X
+
+    def score_samples(self, X):
+        """
+        Generate scores for each row of X from either the nominal or anomaly distribution.
+
+        Parameters:
+        - X: Input data array.
+
+        Returns:
+        - scores: A 1D array of scores for each row in X.
+        - labels: A 1D array of labels indicating the source of each score (0 = nominal, 1 = anomaly).
+        """
+        num_samples = X.shape[0]
+        scores = np.zeros(num_samples)
+        labels = np.zeros(num_samples, dtype=int)
+
+        for i in range(num_samples):
+            if np.random.rand() < self.tau:
+                # Generate score from the anomaly distribution
+                scores[i] = np.random.normal(loc=self.anomaly_mean, scale=self.anomaly_std)
+                labels[i] = 1
+            else:
+                # Generate score from the nominal distribution
+                scores[i] = np.random.normal(loc=self.nominal_mean, scale=self.nominal_std)
+                labels[i] = 0
+
+        return scores, labels
 
 
 ###################################################################################################
 ###################################################################################################
+
 
 def build_custom_score_models(M=50, tau=0.01, nominal_params=(0, 1), anomaly_params=(2, 1)):
     """
