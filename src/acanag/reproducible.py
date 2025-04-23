@@ -1294,6 +1294,49 @@ def build_custom_score_models(M=50, tau=0.01, nominal_params=(0, 1), anomaly_par
 ###################################################################################################
 
 
+def build_custom_score_models2(
+    M=50, 
+    tau=0.01, 
+    nominal_params=(0, 1), 
+    anomaly_params_list=[(2, 1), (3, 0.5)]
+):
+    """
+    Build a dictionary of M models, where M-1 models generate scores from a single Gaussian distribution,
+    and the last model generates scores from a mixture of one nominal and two anomaly distributions.
+
+    Parameters:
+    - M: Total number of models to generate.
+    - tau: Probability of sampling from the anomaly distributions in the final model.
+    - nominal_params: Tuple (mean, std) for the nominal Gaussian distribution.
+    - anomaly_params_list: List of tuples [(mean, std), ...] for the anomaly Gaussian distributions.
+
+    Returns:
+    - models: Dictionary of models.
+    """
+    models = {}
+
+    # Create M-1 GaussianScoreModel instances
+    for m_idx in range(M - 1):
+        mean, std = nominal_params
+        model = GaussianScoreModel(mean=mean, std=std)
+        models[f'model_{m_idx + 1}'] = model
+
+    # Create the final ExtendedMixtureGaussianScoreModel
+    nominal_mean, nominal_std = nominal_params
+    anomaly_params_1 = anomaly_params_list[0]
+    anomaly_params_2 = anomaly_params_list[1]
+    final_model = ExtendedMixtureGaussianScoreModel(
+        tau=tau,
+        nominal_mean=nominal_mean,
+        nominal_std=nominal_std,
+        anomaly1_mean=anomaly_params_1[0],
+        anomaly1_std=anomaly_params_1[1],
+        anomaly2_mean=anomaly_params_2[0],
+        anomaly2_std=anomaly_params_2[1]
+    )
+    models[f'model_{M}'] = final_model
+
+    return models
 
 
 ###################################################################################################
