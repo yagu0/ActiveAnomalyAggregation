@@ -1513,7 +1513,50 @@ def plot_time_series(X, Y):
 ###################################################################################################
 ###################################################################################################
 
-
+class EuclideanDifferenceAnomalyDetector:
+    def __init__(self):
+        """
+        Initializes the Euclidean Difference Anomaly Detector.
+        This model calculates the Euclidean distance between consecutive rows of the data.
+        """
+        pass
+    
+    def fit(self, X):
+        """
+        Fits the model to the data (although no actual fitting is necessary here).
+        This is just for consistency with the framework.
+        
+        Parameters:
+        - X: The data to fit the model to.
+        """
+        # In this case, there's no fitting process required, so we'll just store X if needed
+        self.X = X  # Optional: We store X for future use if needed.
+    
+    def score_samples(self, X):
+        """
+        Computes the Euclidean distance between consecutive rows and returns the scores.
+        
+        Parameters:
+        - X: The data to compute anomaly scores for (shape: [n_samples, n_features]).
+        
+        Returns:
+        - scores: A NumPy array of scores, where each value is the Euclidean distance 
+                  from the previous row.
+        """
+        # Initialize a list to hold the scores
+        scores = np.zeros(X.shape[0])
+        
+        # Calculate the Euclidean distances between consecutive rows
+        for i in range(1, X.shape[0]):
+            # Euclidean distance between row i and row (i-1)
+            dist = np.linalg.norm(X[i] - X[i-1])
+            scores[i] = dist
+        
+        # The first row score is set to the same as the second row score
+        scores[0] = scores[1]
+        
+        
+        return scores
 
 
 ###################################################################################################
