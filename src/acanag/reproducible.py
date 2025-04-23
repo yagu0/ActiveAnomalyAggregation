@@ -1564,6 +1564,47 @@ class EuclideanDifferenceAnomalyDetector:
 ###################################################################################################
 
 
+def Create_Anomaly_Models(d, n_LODA_models=0, additional_models=None):
+    """
+    Creates a fixed number of LODA models and user-specified anomaly detection models.
+    
+    Parameters:
+    - d: Data dimensionality.
+    - n_LODA_models: The number of LODA models to generate.
+    - additional_models: Dictionary of {model_name: uninitialized model instance}.
+
+    Returns:
+    - models: Dictionary containing all models.
+    """
+    
+    # Initialize models dictionary
+    models = {}
+    
+    # Loop to create n_LODA_models
+    for i in range(n_LODA_models):
+        # Increment LODA_index to generate unique model names (Loda_1, Loda_2, ..., Loda_M)
+        current_LODA_index = i + 1
+        
+        # Generate a single LODA model and add it to the models dictionary
+        new_model, proj_vectors = LODA_OAT(M=1, d=d, models=None, LODA_index=current_LODA_index)
+        
+        # Add the newly generated models to the models dictionary
+        models.update(new_model)
+    
+    # Add user-specified models (e.g., IsolationForest, OneClassSVM)
+    if additional_models:
+        for model_name, model_instance in additional_models.items():
+            models[model_name] = model_instance
+
+    return models
+
+
+###################################################################################################
+###################################################################################################
+
+
+###################################################################################################
+###################################################################################################
 
 
 ###################################################################################################
