@@ -1,5 +1,5 @@
-## A bunch of functions required only to run the reproducible Jupyter Notebook 
-## for the paper's plot outputs.
+## A bunch of functions required to run the reproducible Jupyter Notebook 
+## for the paper's plot outputs and also to run some of the function in
 
 import numpy as np
 from sklearn.linear_model import LogisticRegression
