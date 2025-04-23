@@ -1604,6 +1604,74 @@ def Create_Anomaly_Models(d, n_LODA_models=0, additional_models=None):
 ###################################################################################################
 
 
+def Compute_Model_Scores(X, models):
+    """
+    Compute anomaly scores for each model in the models dictionary.
+    
+    Parameters:
+    - X: The data to compute the scores for (shape: [n_samples, n_features]).
+    - models: Dictionary of models to compute scores from.
+    
+    Returns:
+    - scores_array: A NumPy array where each row corresponds to a data point
+                     and each column corresponds to a model's score for that data point.
+    """
+    tiny_eps = .0000000001
+    # Initialize the scores array with the correct shape: n_samples x n_models
+    n_samples = X.shape[0]
+    n_models = len(models)
+    scores_array = np.zeros((n_samples, n_models))
+    
+    # Loop over each model and calculate the scores
+    for i, (model_name, model) in enumerate(models.items()):
+        
+        # Get the raw scores and flatten them
+        if isinstance(model, OneClassSVM):
+            # Use decision_function() for OneClassSVM to compute anomaly scores
+            model.fit(X)
+            scores = model.decision_function(X).ravel()
+            #The above has anomalies as smaller values, and can be negative. Correction:
+            scores = -scores
+            minOne = np.min(scores)
+            scores = scores - minOne + tiny_eps
+            #max_value = np.max(scores)
+            #scores = max_value - scores  # Invert the scores: Higher scores for anomalies
+        elif isinstance(model, IsolationForest):
+            model.fit(X)
+            # Use decision_function() for OneClassSVM to compute anomaly scores
+            scores = model.decision_function(X).ravel()
+            #The above has anomalies as smaller values, and can be negative. Correction:
+            scores = -scores
+            minIso = np.min(scores)
+            scores = scores - minIso + tiny_eps
+            #scores = -decision_fn  # Invert the scores: Higher scores for anomalies
+
+        elif isinstance(model, LocalOutlierFactor):
+            model.fit(X)
+            # Use decision_function() for OneClassSVM to compute anomaly scores
+            scores = model.decision_function(X).ravel()
+            #The above has anomalies as smaller values, and can be negative. Correction:
+            scores = -scores
+            minLOF = np.min(scores)
+            scores = scores - minLOF + tiny_eps
+            #scores = -decision_fn  # Invert the scores: Higher scores for anomalies
+
+        
+        else:
+            # Use score_samples() for other models 
+            model.fit(X)
+            scores = model.score_samples(X).ravel()  # Flatten the scores to a 1D array
+            #print(scores)
+            
+            # For IsolationForest, invert the scores for higher scores for anomalies
+            #if isinstance(model, IsolationForest):
+                #scores = -scores
+        
+        scores_array[:, i] = scores
+        
+    return scores_array
+
+
 ###################################################################################################
 ###################################################################################################
 
