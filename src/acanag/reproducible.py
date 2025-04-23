@@ -1,5 +1,6 @@
 ## A bunch of functions required to run the reproducible Jupyter Notebook 
 ## for the paper's plot outputs and also to run some of the function in
+## docs/source/content/examples
 
 import numpy as np
 from sklearn.linear_model import LogisticRegression
