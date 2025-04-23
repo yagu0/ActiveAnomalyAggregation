@@ -1162,12 +1162,72 @@ def build_random_score_models(M=50):
     return models
 
 
+###################################################################################################
+###################################################################################################
+
+def build_custom_score_models(M=50, tau=0.01, nominal_params=(0, 1), anomaly_params=(2, 1)):
+    """
+    Build a dictionary of M models, where M-1 models generate scores from a single Gaussian distribution,
+    and the last model generates scores from a mixture of two Gaussians.
+
+    Parameters:
+    - M: Total number of models to generate.
+    - tau: Probability of sampling from the anomaly distribution in the final model.
+    - nominal_params: Tuple (mean, std) for the nominal Gaussian distribution.
+    - anomaly_params: Tuple (mean, std) for the anomaly Gaussian distribution.
+
+    Returns:
+    - models: Dictionary of models.
+    """
+    models = {}
+
+    # Create M-1 GaussianScoreModel instances
+    for m_idx in range(M - 1):
+        mean, std = nominal_params
+        model = GaussianScoreModel(mean=mean, std=std)
+        models[f'model_{m_idx + 1}'] = model
+
+    # Create the final MixtureGaussianScoreModel
+    nominal_mean, nominal_std = nominal_params
+    anomaly_mean, anomaly_std = anomaly_params
+    final_model = MixtureGaussianScoreModel(
+        tau=tau,
+        nominal_mean=nominal_mean,
+        nominal_std=nominal_std,
+        anomaly_mean=anomaly_mean,
+        anomaly_std=anomaly_std
+    )
+    models[f'model_{M}'] = final_model
+
+    return models
 
 
 ###################################################################################################
 ###################################################################################################
 
 
+
+
+###################################################################################################
+###################################################################################################
+
+
+
+
+###################################################################################################
+###################################################################################################
+
+
+
+
+###################################################################################################
+###################################################################################################
+
+
+
+
+###################################################################################################
+###################################################################################################
 
 
 
