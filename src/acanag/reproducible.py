@@ -1160,6 +1160,39 @@ def build_random_score_models(M=50):
         models[f'model_{m_idx + 1}'] = model
     
     return models
+    
+
+###################################################################################################
+###################################################################################################
+
+
+class GaussianScoreModel:
+    def __init__(self, mean=0, std=1):
+        """
+        Initialize the GaussianScoreModel with the mean and standard deviation of the Gaussian distribution.
+
+        Parameters:
+        - mean: Mean of the Gaussian distribution.
+        - std: Standard deviation of the Gaussian distribution.
+        """
+        self.mean = mean
+        self.std = std
+
+    def fit(self, X):
+        # Placeholder fit method (no action needed for this model).
+        self.X = X
+
+    def score_samples(self, X):
+        """
+        Generate scores for each row of X from a Gaussian distribution.
+
+        Parameters:
+        - X: Input data array.
+
+        Returns:
+        - scores: A 1D array of scores for each row in X.
+        """
+        return np.random.normal(loc=self.mean, scale=self.std, size=X.shape[0])
 
 
 ###################################################################################################
