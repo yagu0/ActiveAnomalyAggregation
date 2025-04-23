@@ -576,7 +576,20 @@ def new_custom_loss_2(X_lab, Y_lab, q_tau_tm1, all_labeled_scores, model, X_so_f
     # Total loss
     return first_term + second_term
 
+###################################################################################################
+###################################################################################################
 
+class RandomScore:
+    def __init__(self):
+        pass
+    
+    def fit(self, X):
+        # No actual fitting logic for RandomScore; just a placeholder
+        self.X = X
+    
+    def score_samples(self, X):
+        # Assign a random score between 0 and 1 for each data point
+        return np.random.rand(X.shape[0])
 
 
 ###################################################################################################
