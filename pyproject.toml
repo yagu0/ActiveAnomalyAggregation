@@ -14,6 +14,9 @@ dependencies = [
   "numpy",
   "scikit-learn",
   "tensorflow",
+  "ipykernel",
+  "cvxpy",
+  "seaborne",
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
