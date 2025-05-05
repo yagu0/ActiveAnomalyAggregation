@@ -20,5 +20,5 @@ Yes, the '.' is part of the command.
 
 ## Usage
 
-See the Jupyter notebook example in doc/source/content/examples. A notebook reproducing the results from the associated paper
-can be found in doc/source/content/Reproducible.
+See the Jupyter notebook example in doc/source/content/examples. A Jupyter notebook reproducing the results from the associated paper
+can itself be found in doc/source/content/Reproducible.
