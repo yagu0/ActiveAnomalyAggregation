@@ -11,7 +11,7 @@ Unzip acanag.zip on your computer. You then need to open a terminal window (if y
 open a terminal window inside your active virtual environment). 
 
 If necessary, type 'ls' into the terminal window to see what folder you are inside currently. You then need to 
-move from that folder to inside the main outer folder of the unzipped library on your computer using command line commands.
+move from that folder to inside the main outer folder  of the unzipped library on your computer using command line commands.
 
 When you are inside the main outer folder of the library, you can simply type into the terminal window:
 
