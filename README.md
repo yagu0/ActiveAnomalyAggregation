@@ -2,7 +2,7 @@
 
 ## Requirements
 
-Python 3 (at least 3.8, up to 3.12 included).
+Python 3 (at least 3.10, up to 3.12 included).
 Python's package manager pip is required for the installation.
 
 ## Installation
