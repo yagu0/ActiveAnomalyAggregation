@@ -20,5 +20,9 @@ Yes, the '.' is part of the command.
 
 ## Usage
 
-See the Jupyter notebook example in doc/source/content/examples. A Jupyter notebook reproducing the results from the associated paper
-can itself be found in doc/source/content/Reproducible.
+The Python functions in acanag only require a Python installation to function. However, you need to have the interactive web platform Jupyter running on your
+computer in order to natively run the Jupyter notebook example in doc/source/content/examples. Ways to get Jupyter running on your computer via command line
+tools or a graphical user interface such as Anaconda Navigator can be found online: jupyter.org and anaconda.com are good starting places. Otherwise, you
+will have to convert the notebook .ipynb file to a .py script to run it.
+
+An additional Jupyter notebook reproducing the results from the associated paper is found in doc/source/content/Reproducible.
