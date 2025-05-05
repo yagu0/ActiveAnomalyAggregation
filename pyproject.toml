@@ -7,7 +7,7 @@ name = "acanag"
 version = "0.0.1"
 description = "Active Anomaly Aggregation"
 authors = [
-    {name = "Benjamin Auder", email = "benjamin@auder.net"}
+    {name = "Benjamin Auder", email = "benjamin@auder.net"},
     {name = "Kevin Bleakley", email = "kevin.bleakley@inria.fr"}
 ]
 readme = "README.md"
