@@ -16,7 +16,7 @@ dependencies = [
   "tensorflow",
   "ipykernel",
   "cvxpy",
-  "seaborne",
+  "seaborn",
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
