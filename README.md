@@ -8,7 +8,7 @@ Python's package manager pip is required for the installation.
 ## Installation
 
 Unzip acanag.zip on your computer. You then need to open a terminal window (if you are using the Anaconda Navigator App GUI, first
-open a terminal window inside your active environment as described above). 
+open a terminal window inside your active virtual environment). 
 
 If necessary, type 'ls' into the terminal window to see what folder you are inside currently. You then need to tell the terminal
 window to move from where you currently are to inside the main outer folder of the unzipped library on your computer.
