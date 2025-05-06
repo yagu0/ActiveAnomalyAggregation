@@ -6,6 +6,10 @@ build-backend = "hatchling.build"
 name = "acanag"
 version = "0.0.1"
 description = "Active Anomaly Aggregation"
+authors = [
+    {name = "Benjamin Auder", email = "benjamin@auder.net"},
+    {name = "Kevin Bleakley", email = "kevin.bleakley@inria.fr"}
+]
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -24,3 +28,7 @@ classifiers = [
 ]
 license = "MIT"
 license-files = ["LICEN[CS]E*"]
+
+[project.urls]
+Homepage = "https://github.com/yagu0/ActiveAnomalyAggregation"
+Issues = "https://github.com/yagu0/ActiveAnomalyAggregation/issues"
