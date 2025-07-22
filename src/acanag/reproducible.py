@@ -488,7 +488,7 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                     device='cuda' if torch.cuda.is_available() else 'cpu'
                 )
             
-                learned_model = net.fit(all_labeled_scores.astype(np.float32), Y_lab.astype(np.longlong))
+                learned_model = net.fit(all_labeled_scores.astype(np.float32), np.array(Y_lab).astype(np.longlong))
                 new_preds = learned_model.predict_proba(all_scores.astype(np.float32))[:, 0]
                 
                 
