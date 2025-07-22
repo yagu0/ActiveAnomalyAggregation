@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import random
 
 def optimal_bin_count(my_projections):
     """
