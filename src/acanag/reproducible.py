@@ -486,7 +486,7 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
 
             if supervised_method == 'NeuralNet':
             
-                mlp = MLPClassifier(hidden_layer_sizes=(np.max(50,3*np.shape(X_curr)[1]),np.max(50,3*np.shape(X_curr)[1])), max_iter=200, random_state=42, class_weight='balanced')
+                mlp = MLPClassifier(hidden_layer_sizes=(max(50,3*np.shape(X_curr)[1]),max(50,3*np.shape(X_curr)[1])), max_iter=200, random_state=42, class_weight='balanced')
                 learned_model = mlp.fit(all_labeled_scores, Y_lab)
                 new_preds = learned_model.predict_proba(all_scores)[:, 1]
 
@@ -610,7 +610,7 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
             if supervised_method == 'NeuralNet':
                 learner = ActiveLearner(
                     estimator=MLPClassifier(
-                        hidden_layer_sizes=(np.max(50,3*np.shape(X_curr)[1]),np.max(50,3*np.shape(X_curr)[1])), 
+                        hidden_layer_sizes=(max(50,3*np.shape(X_curr)[1]),max(50,3*np.shape(X_curr)[1])), 
                         max_iter=200,
                         random_state=42,
                         class_weight='balanced',
