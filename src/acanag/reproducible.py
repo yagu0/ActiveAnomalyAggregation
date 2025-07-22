@@ -454,6 +454,22 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                 learned_model = LRC.fit(all_labeled_scores, Y_lab)
                 # Predicted probabilities for the positive class
                 new_preds = learned_model.predict_proba(all_scores)[:, 1]
+
+            if supervised_method == 'NeuralNet':
+            
+                net = NeuralNetClassifier(
+                    module=CustomNet,
+                    module__input_dim=all_labeled_scores.shape[1],
+                    max_epochs=20,
+                    lr=0.001,
+                    optimizer=torch.optim.Adam,
+                    iterator_train__shuffle=True,
+                    verbose=0,
+                    device='cuda' if torch.cuda.is_available() else 'cpu'
+                )
+            
+                learned_model = net.fit(all_labeled_scores.astype(np.float32), Y_lab.astype(np.longlong))
+                new_preds = learned_model.predict_proba(all_scores.astype(np.float32))[:, 0]
                 
                 
 
@@ -554,6 +570,23 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                 query_strategy = margin_sampling,
                 #query_strategy = entropy_sampling,
                 X_training=curr_all_labeled_scores, y_training=curr_Y_lab
+                )
+
+            if supervised_method == 'NeuralNet':
+                learner = ActiveLearner(
+                    estimator=NeuralNetClassifier(
+                        module=CustomNet,
+                        module__input_dim=curr_all_labeled_scores.shape[1],
+                        max_epochs=20,
+                        lr=0.001,
+                        optimizer=torch.optim.Adam,
+                        iterator_train__shuffle=True,
+                        verbose=0,
+                        device='cuda' if torch.cuda.is_available() else 'cpu'
+                    ),
+                    query_strategy=margin_sampling,
+                    X_training=curr_all_labeled_scores.astype(np.float32),
+                    y_training=curr_Y_lab.astype(np.longlong)
                 )
                 
             
