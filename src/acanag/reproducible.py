@@ -13,33 +13,35 @@ from modAL.uncertainty import *
 import tensorflow as tf
 from .glad import custom_binary_crossentropy_loss
 from .loda_utils import LODA_OAT
-import torch
-from torch import nn
-import torch.nn.functional as F
-from skorch import NeuralNetClassifier
+from sklearn.neural_network import MLPClassifier
+#import torch
+#from torch import nn
+#import torch.nn.functional as F
+#from skorch import NeuralNetClassifier
+
 
 ###################################################################################################
 ###################################################################################################
 
-class MyNeuralNetClassifier(NeuralNetClassifier):
-    def __sklearn_tags__(self):
-        return {'estimator_type': 'classifier'}
+# class MyNeuralNetClassifier(NeuralNetClassifier):
+#     def __sklearn_tags__(self):
+#         return {'estimator_type': 'classifier'}
 
 ###################################################################################################
 ###################################################################################################
 
-class CustomNet(nn.Module):
-    def __init__(self, input_dim):
-        super(CustomNet, self).__init__()
-        hidden_neurons = max(50, input_dim * 3)
-        self.hidden = nn.Linear(input_dim, hidden_neurons)
-        self.output = nn.Linear(hidden_neurons, 2) 
-        self.leaky_relu = nn.LeakyReLU()
+# class CustomNet(nn.Module):
+#     def __init__(self, input_dim):
+#         super(CustomNet, self).__init__()
+#         hidden_neurons = max(50, input_dim * 3)
+#         self.hidden = nn.Linear(input_dim, hidden_neurons)
+#         self.output = nn.Linear(hidden_neurons, 2) 
+#         self.leaky_relu = nn.LeakyReLU()
 
-    def forward(self, x):
-        x = self.leaky_relu(self.hidden(x))
-        x = F.log_softmax(self.output(x), dim=1) 
-        return x
+#     def forward(self, x):
+#         x = self.leaky_relu(self.hidden(x))
+#         x = F.log_softmax(self.output(x), dim=1) 
+#         return x
 
 ###################################################################################################
 ###################################################################################################
@@ -484,19 +486,25 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
 
             if supervised_method == 'NeuralNet':
             
-                net = MyNeuralNetClassifier(
-                    module=CustomNet,
-                    module__input_dim=all_labeled_scores.shape[1],
-                    max_epochs=20,
-                    lr=0.001,
-                    optimizer=torch.optim.Adam,
-                    iterator_train__shuffle=True,
-                    verbose=0,
-                    device='cuda' if torch.cuda.is_available() else 'cpu'
-                )
+                mlp = MLPClassifier(hidden_layer_sizes=(3*np.shape(X_curr)[1],3*np.shape(X_curr)[1]), max_iter=200, random_state=42, class_weight='balanced')
+                learned_model = mlp.fit(all_labeled_scores, Y_lab)
+                new_preds = learned_model.predict_proba(all_scores)[:, 1]
+
+            # if supervised_method == 'NeuralNet':
             
-                learned_model = net.fit(all_labeled_scores.astype(np.float32), np.array(Y_lab).astype(np.longlong))
-                new_preds = learned_model.predict_proba(all_scores.astype(np.float32))[:, 0]
+            #     net = MyNeuralNetClassifier(
+            #         module=CustomNet,
+            #         module__input_dim=all_labeled_scores.shape[1],
+            #         max_epochs=20,
+            #         lr=0.001,
+            #         optimizer=torch.optim.Adam,
+            #         iterator_train__shuffle=True,
+            #         verbose=0,
+            #         device='cuda' if torch.cuda.is_available() else 'cpu'
+            #     )
+            
+            #     learned_model = net.fit(all_labeled_scores.astype(np.float32), np.array(Y_lab).astype(np.longlong))
+            #     new_preds = learned_model.predict_proba(all_scores.astype(np.float32))[:, 0]
                 
                 
 
@@ -601,20 +609,34 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
 
             if supervised_method == 'NeuralNet':
                 learner = ActiveLearner(
-                    estimator=NeuralNetClassifier(
-                        module=CustomNet,
-                        module__input_dim=curr_all_labeled_scores.shape[1],
-                        max_epochs=20,
-                        lr=0.001,
-                        optimizer=torch.optim.Adam,
-                        iterator_train__shuffle=True,
-                        verbose=0,
-                        device='cuda' if torch.cuda.is_available() else 'cpu'
+                    estimator=MLPClassifier(
+                        hidden_layer_sizes=(3*np.shape(X_curr)[1],3*np.shape(X_curr)[1]), 
+                        max_iter=200,
+                        random_state=42,
+                        class_weight='balanced',
+                        warm_start=True 
                     ),
                     query_strategy=margin_sampling,
-                    X_training=curr_all_labeled_scores.astype(np.float32),
-                    y_training=curr_Y_lab.astype(np.longlong)
+                    X_training=curr_all_labeled_scores,
+                    y_training=curr_Y_lab
                 )
+
+            # if supervised_method == 'NeuralNet':
+            #     learner = ActiveLearner(
+            #         estimator=NeuralNetClassifier(
+            #             module=CustomNet,
+            #             module__input_dim=curr_all_labeled_scores.shape[1],
+            #             max_epochs=20,
+            #             lr=0.001,
+            #             optimizer=torch.optim.Adam,
+            #             iterator_train__shuffle=True,
+            #             verbose=0,
+            #             device='cuda' if torch.cuda.is_available() else 'cpu'
+            #         ),
+            #         query_strategy=margin_sampling,
+            #         X_training=curr_all_labeled_scores.astype(np.float32),
+            #         y_training=curr_Y_lab.astype(np.longlong)
+            #     )
                 
             
                 
