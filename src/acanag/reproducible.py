@@ -490,6 +490,24 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                 learned_model = mlp.fit(all_labeled_scores, Y_lab)
                 new_preds = learned_model.predict_proba(all_scores)[:, 1]
 
+
+
+            if supervised_method == 'NeuralNet':
+                r0 = 1 - tau_exp  # expected proportion of class 0
+                weights = {0: r0, 1: 1 - r0}
+                
+                # Create sample weights array based on current labeled data
+                sample_weights = np.array([weights[label] for label in Y_lab])
+                
+                mlp = MLPClassifier(
+                    hidden_layer_sizes=(max(50, 3 * np.shape(X_curr)[1]), max(50, 3 * np.shape(X_curr)[1])),
+                    max_iter=200,
+                    random_state=42
+                )
+    
+                learned_model = mlp.fit(all_labeled_scores, Y_lab, sample_weight=sample_weights)
+                new_preds = learned_model.predict_proba(all_scores)[:, 1]
+
             # if supervised_method == 'NeuralNet':
             
             #     net = MyNeuralNetClassifier(
@@ -608,18 +626,37 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                 )
 
             if supervised_method == 'NeuralNet':
+                # Compute sample weights for current training labels
+                r0 = 1 - tau_exp
+                weights = {0: r0, 1: 1 - r0}
+                sample_weights = np.array([weights[label] for label in curr_Y_lab])
+            
                 learner = ActiveLearner(
                     estimator=MLPClassifier(
-                        hidden_layer_sizes=(max(50,3*np.shape(X_curr)[1]),max(50,3*np.shape(X_curr)[1])), 
+                        hidden_layer_sizes=(max(50, 3 * np.shape(X_curr)[1]), max(50, 3 * np.shape(X_curr)[1])), 
                         max_iter=200,
                         random_state=42,
-                        class_weight='balanced',
-                        warm_start=True 
+                        warm_start=True
                     ),
                     query_strategy=margin_sampling,
                     X_training=curr_all_labeled_scores,
-                    y_training=curr_Y_lab
+                    y_training=curr_Y_lab,
+                    fit_kwargs={'sample_weight': sample_weights}
                 )
+
+            # if supervised_method == 'NeuralNet':
+            #     learner = ActiveLearner(
+            #         estimator=MLPClassifier(
+            #             hidden_layer_sizes=(max(50,3*np.shape(X_curr)[1]),max(50,3*np.shape(X_curr)[1])), 
+            #             max_iter=200,
+            #             random_state=42,
+            #             class_weight='balanced',
+            #             warm_start=True 
+            #         ),
+            #         query_strategy=margin_sampling,
+            #         X_training=curr_all_labeled_scores,
+            #         y_training=curr_Y_lab
+            #     )
 
             # if supervised_method == 'NeuralNet':
             #     learner = ActiveLearner(
