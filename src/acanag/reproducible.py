@@ -13,6 +13,26 @@ from modAL.uncertainty import *
 import tensorflow as tf
 from .glad import custom_binary_crossentropy_loss
 from .loda_utils import LODA_OAT
+import torch
+from torch import nn
+import torch.nn.functional as F
+from skorch import NeuralNetClassifier
+
+###################################################################################################
+###################################################################################################
+
+class CustomNet(nn.Module):
+    def __init__(self, input_dim):
+        super(CustomNet, self).__init__()
+        hidden_neurons = max(50, input_dim * 3)
+        self.hidden = nn.Linear(input_dim, hidden_neurons)
+        self.output = nn.Linear(hidden_neurons, 1)
+        self.leaky_relu = nn.LeakyReLU()
+
+    def forward(self, x):
+        x = self.leaky_relu(self.hidden(x))
+        x = torch.sigmoid(self.output(x))
+        return x
 
 ###################################################################################################
 ###################################################################################################
