@@ -26,12 +26,12 @@ class CustomNet(nn.Module):
         super(CustomNet, self).__init__()
         hidden_neurons = max(50, input_dim * 3)
         self.hidden = nn.Linear(input_dim, hidden_neurons)
-        self.output = nn.Linear(hidden_neurons, 1)
+        self.output = nn.Linear(hidden_neurons, 2) 
         self.leaky_relu = nn.LeakyReLU()
 
     def forward(self, x):
         x = self.leaky_relu(self.hidden(x))
-        x = torch.sigmoid(self.output(x))
+        x = F.log_softmax(self.output(x), dim=1) 
         return x
 
 ###################################################################################################
