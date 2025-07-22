@@ -21,6 +21,13 @@ from skorch import NeuralNetClassifier
 ###################################################################################################
 ###################################################################################################
 
+class MyNeuralNetClassifier(NeuralNetClassifier):
+    def __sklearn_tags__(self):
+        return {'estimator_type': 'classifier'}
+
+###################################################################################################
+###################################################################################################
+
 class CustomNet(nn.Module):
     def __init__(self, input_dim):
         super(CustomNet, self).__init__()
@@ -477,7 +484,7 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
 
             if supervised_method == 'NeuralNet':
             
-                net = NeuralNetClassifier(
+                net = MyNeuralNetClassifier(
                     module=CustomNet,
                     module__input_dim=all_labeled_scores.shape[1],
                     max_epochs=20,
