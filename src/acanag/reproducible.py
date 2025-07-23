@@ -537,16 +537,13 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                     criterion__weight=class_weights_tensor           
                 )
 
-                # Wrap net inside a pipeline with StandardScaler
-                pipeline = make_pipeline(StandardScaler(), net)
-            
-                learned_model = pipeline.fit(
+                learned_model = net.fit(
                     all_labeled_scores.astype(np.float32),
                     y_array
                 )
-            
+                
+                # Predict probabilities directly from the trained net
                 new_preds = learned_model.predict_proba(all_scores.astype(np.float32))[:, 1]
-
                                             
                 
 
@@ -660,22 +657,19 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                 class_weights = total / (2.0 * class_counts)
                 class_weights_tensor = torch.tensor(class_weights, dtype=torch.float32)
             
-                # Step 3: Create ActiveLearner with weighted loss
-                estimator = make_pipeline(
-                    StandardScaler(),
-                    NeuralNetClassifier(
-                        SimpleNN,
-                        module__input_dim=curr_all_labeled_scores.shape[1],
-                        max_epochs=20,
-                        lr=0.01,
-                        verbose=0,
-                        callbacks=[],
-                        train_split=None,
-                        criterion=nn.CrossEntropyLoss,           
-                        criterion__weight=class_weights_tensor      
-                    )
+                estimator = NeuralNetClassifier(
+                    SimpleNN,
+                    module__input_dim=curr_all_labeled_scores.shape[1],
+                    max_epochs=20,
+                    lr=0.01,
+                    verbose=0,
+                    callbacks=[],
+                    train_split=None,
+                    criterion=nn.CrossEntropyLoss,           
+                    criterion__weight=class_weights_tensor      
                 )
-
+                
+                # Create ActiveLearner with the raw estimator
                 learner = ActiveLearner(
                     estimator=estimator,
                     query_strategy=margin_sampling,
