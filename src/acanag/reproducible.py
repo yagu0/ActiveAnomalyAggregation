@@ -52,17 +52,46 @@ from scipy.stats import zscore
 #     def forward(self, x):
 #         return self.net(x)
 
+# class SimpleNN(nn.Module):
+#     def __init__(self, input_dim, hidden_dim=None):
+#         super(SimpleNN, self).__init__()
+#         if hidden_dim is None:
+#             hidden_dim = max(50, 3 * input_dim) 
+
+#         self.net = nn.Sequential(
+#             nn.Linear(input_dim, hidden_dim),
+#             nn.LeakyReLU(0.1),
+#             nn.Dropout(0.1),
+#             nn.Linear(hidden_dim, 2)
+#         )
+
+#         # Custom weight initialization
+#         for m in self.net:
+#             if isinstance(m, nn.Linear):
+#                 nn.init.kaiming_normal_(m.weight)
+#                 if m.bias is not None:
+#                     nn.init.constant_(m.bias, 0)
+
+#     def forward(self, x):
+#         return self.net(x)
+
 class SimpleNN(nn.Module):
     def __init__(self, input_dim, hidden_dim=None):
         super(SimpleNN, self).__init__()
         if hidden_dim is None:
-            hidden_dim = max(50, 3 * input_dim) 
+            hidden_dim = max(50, 3 * input_dim)
+        hidden_dim2 = max(30, hidden_dim // 2)  # second hidden layer smaller
 
         self.net = nn.Sequential(
             nn.Linear(input_dim, hidden_dim),
             nn.LeakyReLU(0.1),
             nn.Dropout(0.1),
-            nn.Linear(hidden_dim, 2)
+
+            nn.Linear(hidden_dim, hidden_dim2),
+            nn.LeakyReLU(0.1),
+            nn.Dropout(0.1),
+
+            nn.Linear(hidden_dim2, 2)
         )
 
         # Custom weight initialization
