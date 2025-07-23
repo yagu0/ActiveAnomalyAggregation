@@ -482,7 +482,8 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                     max_epochs=20,
                     lr=0.01,
                     verbose=0,
-                    callbacks=[]
+                    callbacks=[],
+                    train_split=None
                 )
                 
                 learned_model = net.fit(
@@ -600,7 +601,8 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                         max_epochs=20,
                         lr=0.01,
                         verbose=0,
-                        callbacks=[]
+                        callbacks=[],
+                        train_split=None
                     ),
                     query_strategy=margin_sampling,
                     X_training=curr_all_labeled_scores.astype(np.float32),
