@@ -33,18 +33,42 @@ from skorch import NeuralNetClassifier
 #         x = F.relu(self.fc1(x))
 #         return self.fc2(x)  # No softmax; skorch handles that
 
+# class SimpleNN(nn.Module):
+#     def __init__(self, input_dim, hidden_dim=None):
+#         super(SimpleNN, self).__init__()
+#         if hidden_dim is None:
+#             hidden_dim = max(50, 3 * input_dim)
+
+#         self.net = nn.Sequential(
+#             nn.Linear(input_dim, hidden_dim),
+#             nn.ReLU(),  # or nn.LeakyReLU()
+#             nn.Dropout(0.3),  # optional but helps
+#             nn.Linear(hidden_dim, 2)
+#         )
+
+#     def forward(self, x):
+#         return self.net(x)
+
 class SimpleNN(nn.Module):
     def __init__(self, input_dim, hidden_dim=None):
         super(SimpleNN, self).__init__()
         if hidden_dim is None:
-            hidden_dim = max(50, 3 * input_dim)
+            hidden_dim = min(20, 3 * input_dim)  # smaller hidden layer
 
         self.net = nn.Sequential(
             nn.Linear(input_dim, hidden_dim),
-            nn.ReLU(),  # or nn.LeakyReLU()
-            nn.Dropout(0.3),  # optional but helps
+            nn.BatchNorm1d(hidden_dim),
+            nn.LeakyReLU(0.1),
+            nn.Dropout(0.1),  # reduced dropout
             nn.Linear(hidden_dim, 2)
         )
+
+        # Custom weight initialization
+        for m in self.net:
+            if isinstance(m, nn.Linear):
+                nn.init.kaiming_normal_(m.weight)
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
 
     def forward(self, x):
         return self.net(x)
