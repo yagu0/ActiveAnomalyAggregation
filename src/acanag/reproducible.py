@@ -662,7 +662,8 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
             i = 0
             while i < n_active:   
                           
-                query_idx, query_inst = learner.query(curr_all_scores)
+                #query_idx, query_inst = learner.query(curr_all_scores)
+                query_idx, query_inst = learner.query(curr_all_scores.astype(np.float32))
                 #print('query_idx = ',query_idx)
                 #print('query_inst = ',query_inst)
                 query_idx = int(query_idx[0])
