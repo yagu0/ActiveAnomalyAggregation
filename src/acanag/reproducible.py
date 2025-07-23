@@ -23,15 +23,31 @@ from skorch import NeuralNetClassifier
 ###################################################################################################
 ###################################################################################################
 
+# class SimpleNN(nn.Module):
+#     def __init__(self, input_dim, hidden_dim=32):
+#         super(SimpleNN, self).__init__()
+#         self.fc1 = nn.Linear(input_dim, hidden_dim)
+#         self.fc2 = nn.Linear(hidden_dim, 2)  # Binary classification
+
+#     def forward(self, x):
+#         x = F.relu(self.fc1(x))
+#         return self.fc2(x)  # No softmax; skorch handles that
+
 class SimpleNN(nn.Module):
-    def __init__(self, input_dim, hidden_dim=32):
+    def __init__(self, input_dim, hidden_dim=None):
         super(SimpleNN, self).__init__()
-        self.fc1 = nn.Linear(input_dim, hidden_dim)
-        self.fc2 = nn.Linear(hidden_dim, 2)  # Binary classification
+        if hidden_dim is None:
+            hidden_dim = max(50, 3 * input_dim)
+
+        self.net = nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),
+            nn.ReLU(),  # or nn.LeakyReLU()
+            nn.Dropout(0.3),  # optional but helps
+            nn.Linear(hidden_dim, 2)
+        )
 
     def forward(self, x):
-        x = F.relu(self.fc1(x))
-        return self.fc2(x)  # No softmax; skorch handles that
+        return self.net(x)
 
 ###################################################################################################
 ###################################################################################################
