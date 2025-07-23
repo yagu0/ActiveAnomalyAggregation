@@ -18,6 +18,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from skorch import NeuralNetClassifier
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
 
 
 ###################################################################################################
@@ -534,15 +536,17 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                     criterion=nn.CrossEntropyLoss,              
                     criterion__weight=class_weights_tensor           
                 )
+
+                # Wrap net inside a pipeline with StandardScaler
+                pipeline = make_pipeline(StandardScaler(), net)
             
-                # Step 3: Fit the model
-                learned_model = net.fit(
+                learned_model = pipeline.fit(
                     all_labeled_scores.astype(np.float32),
                     y_array
                 )
             
-                # Step 4: Predict probabilities
                 new_preds = learned_model.predict_proba(all_scores.astype(np.float32))[:, 1]
+
                                             
                 
 
@@ -657,8 +661,9 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                 class_weights_tensor = torch.tensor(class_weights, dtype=torch.float32)
             
                 # Step 3: Create ActiveLearner with weighted loss
-                learner = ActiveLearner(
-                    estimator=NeuralNetClassifier(
+                estimator = make_pipeline(
+                    StandardScaler(),
+                    NeuralNetClassifier(
                         SimpleNN,
                         module__input_dim=curr_all_labeled_scores.shape[1],
                         max_epochs=20,
@@ -668,7 +673,11 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                         train_split=None,
                         criterion=nn.CrossEntropyLoss,           
                         criterion__weight=class_weights_tensor      
-                    ),
+                    )
+                )
+
+                learner = ActiveLearner(
+                    estimator=estimator,
                     query_strategy=margin_sampling,
                     X_training=curr_all_labeled_scores.astype(np.float32),
                     y_training=y_array
