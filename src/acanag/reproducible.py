@@ -17,6 +17,7 @@ from .loda_utils import LODA_OAT
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from skorch import NeuralNetClassifier
 
 
 ###################################################################################################
@@ -474,8 +475,18 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                 new_preds = learned_model.predict_proba(all_scores)[:, 1]
 
             if supervised_method == 'NeuralNet':
-                from skorch import NeuralNetClassifier
-                
+
+                # Step 1: Convert labels and compute weights
+                y_array = np.asarray(Y_lab, dtype=np.int64)
+                class_counts = np.bincount(y_array)
+                total = class_counts.sum()
+                class_weights = total / (2.0 * class_counts)
+                class_weights_tensor = torch.tensor(class_weights, dtype=torch.float32)
+            
+                # Step 2: Define weighted loss
+                weighted_loss = nn.CrossEntropyLoss(weight=class_weights_tensor)
+            
+                # Step 3: Train model
                 net = NeuralNetClassifier(
                     SimpleNN,
                     module__input_dim=all_labeled_scores.shape[1],
@@ -483,15 +494,17 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                     lr=0.01,
                     verbose=0,
                     callbacks=[],
-                    train_split=None
+                    train_split=None,
+                    criterion=weighted_loss
                 )
-                
+            
                 learned_model = net.fit(
                     all_labeled_scores.astype(np.float32),
-                    np.asarray(Y_lab, dtype=np.int64)  
+                    y_array
                 )
+            
                 new_preds = learned_model.predict_proba(all_scores.astype(np.float32))[:, 1]
-                                
+                                            
                 
 
             
@@ -594,6 +607,20 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                 )
 
             if supervised_method == 'NeuralNet':
+                
+                # Step 1: Convert curr_Y_lab to NumPy array
+                y_array = np.asarray(curr_Y_lab, dtype=np.int64)
+                
+                # Step 2: Compute class weights
+                class_counts = np.bincount(y_array)
+                total = class_counts.sum()
+                class_weights = total / (2.0 * class_counts)
+                class_weights_tensor = torch.tensor(class_weights, dtype=torch.float32)
+                
+                # Step 3: Define weighted loss
+                weighted_loss = nn.CrossEntropyLoss(weight=class_weights_tensor)
+                
+                # Step 4: Define the learner with weighted loss
                 learner = ActiveLearner(
                     estimator=NeuralNetClassifier(
                         SimpleNN,
@@ -602,11 +629,12 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                         lr=0.01,
                         verbose=0,
                         callbacks=[],
-                        train_split=None
+                        train_split=None,
+                        criterion=weighted_loss  # 👈 This is the key
                     ),
                     query_strategy=margin_sampling,
                     X_training=curr_all_labeled_scores.astype(np.float32),
-                    y_training=np.asarray(curr_Y_lab, dtype=np.int64)  # <- Local, safe conversion
+                    y_training=y_array  # 👈 Use the safely converted version
                 )
         
                 
