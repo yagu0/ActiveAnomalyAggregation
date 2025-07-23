@@ -20,6 +20,7 @@ import torch.nn.functional as F
 from skorch import NeuralNetClassifier
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
+from scipy.stats import zscore
 
 
 ###################################################################################################
@@ -55,12 +56,12 @@ class SimpleNN(nn.Module):
     def __init__(self, input_dim, hidden_dim=None):
         super(SimpleNN, self).__init__()
         if hidden_dim is None:
-            hidden_dim = min(20, 3 * input_dim)  # smaller hidden layer
+            hidden_dim = max(50, 3 * input_dim) 
 
         self.net = nn.Sequential(
             nn.Linear(input_dim, hidden_dim),
             nn.LeakyReLU(0.1),
-            nn.Dropout(0.1),  # reduced dropout
+            nn.Dropout(0.1),
             nn.Linear(hidden_dim, 2)
         )
 
@@ -516,7 +517,7 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                 new_preds = learned_model.predict_proba(all_scores)[:, 1]
 
             if supervised_method == 'NeuralNet':
-            
+
                 # Step 1: Convert Y_lab and compute class weights
                 y_array = np.asarray(Y_lab, dtype=np.int64)
                 class_counts = np.bincount(y_array)
@@ -524,7 +525,11 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                 class_weights = total / (2.0 * class_counts)
                 class_weights_tensor = torch.tensor(class_weights, dtype=torch.float32)
             
-                # Step 2: Define model with weighted loss
+                # Step 2: Z-score normalize the labeled scores and all scores independently
+                all_labeled_scores_norm = zscore(all_labeled_scores, axis=0)
+                all_scores_norm = zscore(all_scores, axis=0)
+            
+                # Step 3: Define model with weighted loss
                 net = NeuralNetClassifier(
                     SimpleNN,
                     module__input_dim=all_labeled_scores.shape[1],
@@ -533,17 +538,17 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                     verbose=0,
                     callbacks=[],
                     train_split=None,
-                    criterion=nn.CrossEntropyLoss,              
-                    criterion__weight=class_weights_tensor           
+                    criterion=nn.CrossEntropyLoss,
+                    criterion__weight=class_weights_tensor
                 )
-
+            
                 learned_model = net.fit(
-                    all_labeled_scores.astype(np.float32),
+                    all_labeled_scores_norm.astype(np.float32),
                     y_array
                 )
-                
-                # Predict probabilities directly from the trained net
-                new_preds = learned_model.predict_proba(all_scores.astype(np.float32))[:, 1]
+            
+                # Predict probabilities on normalized scores
+                new_preds = learned_model.predict_proba(all_scores_norm.astype(np.float32))[:, 1]
                                             
                 
 
@@ -647,16 +652,19 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                 )
 
             if supervised_method == 'NeuralNet':
-            
+    
                 # Step 1: Convert labels to NumPy array
                 y_array = np.asarray(curr_Y_lab, dtype=np.int64)
-            
+                
                 # Step 2: Compute class weights
                 class_counts = np.bincount(y_array)
                 total = class_counts.sum()
                 class_weights = total / (2.0 * class_counts)
                 class_weights_tensor = torch.tensor(class_weights, dtype=torch.float32)
-            
+                
+                # Minimal change: normalize the training features here
+                curr_all_labeled_scores_norm = zscore(curr_all_labeled_scores, axis=0)
+                
                 estimator = NeuralNetClassifier(
                     SimpleNN,
                     module__input_dim=curr_all_labeled_scores.shape[1],
@@ -669,11 +677,11 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                     criterion__weight=class_weights_tensor      
                 )
                 
-                # Create ActiveLearner with the raw estimator
+                # Create ActiveLearner with normalized training data
                 learner = ActiveLearner(
                     estimator=estimator,
                     query_strategy=margin_sampling,
-                    X_training=curr_all_labeled_scores.astype(np.float32),
+                    X_training=curr_all_labeled_scores_norm.astype(np.float32),
                     y_training=y_array
                 )
         
@@ -685,11 +693,20 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
 
             true_indices = list(range(0,np.shape(curr_all_scores)[0]))
 
+            if supervised_method == 'NeuralNet':
+                curr_all_scores_norm = zscore(curr_all_scores, axis=0).astype(np.float32)
+
             i = 0
             while i < n_active:   
                           
                 #query_idx, query_inst = learner.query(curr_all_scores)
-                query_idx, query_inst = learner.query(curr_all_scores.astype(np.float32))
+
+                if supervised_method == 'NeuralNet':
+                    query_idx, query_inst = learner.query(curr_all_scores_norm)
+                else:
+                    query_idx, query_inst = learner.query(curr_all_scores.astype(np.float32))
+
+                
                 #print('query_idx = ',query_idx)
                 #print('query_inst = ',query_inst)
                 query_idx = int(query_idx[0])
@@ -708,7 +725,7 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                     continue
                     
                 #else:
-                    # Append new index to list:               
+                # Append new index to list:               
                 active_indices.append(true_indices[query_idx])
                 
                 
