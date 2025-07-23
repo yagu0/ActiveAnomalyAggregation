@@ -13,35 +13,24 @@ from modAL.uncertainty import *
 import tensorflow as tf
 from .glad import custom_binary_crossentropy_loss
 from .loda_utils import LODA_OAT
-from sklearn.neural_network import MLPClassifier
-#import torch
-#from torch import nn
-#import torch.nn.functional as F
-#from skorch import NeuralNetClassifier
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
 
 
 ###################################################################################################
 ###################################################################################################
 
-# class MyNeuralNetClassifier(NeuralNetClassifier):
-#     def __sklearn_tags__(self):
-#         return {'estimator_type': 'classifier'}
+class SimpleNN(nn.Module):
+    def __init__(self, input_dim, hidden_dim=32):
+        super(SimpleNN, self).__init__()
+        self.fc1 = nn.Linear(input_dim, hidden_dim)
+        self.fc2 = nn.Linear(hidden_dim, 2)  # Binary classification
 
-###################################################################################################
-###################################################################################################
-
-# class CustomNet(nn.Module):
-#     def __init__(self, input_dim):
-#         super(CustomNet, self).__init__()
-#         hidden_neurons = max(50, input_dim * 3)
-#         self.hidden = nn.Linear(input_dim, hidden_neurons)
-#         self.output = nn.Linear(hidden_neurons, 2) 
-#         self.leaky_relu = nn.LeakyReLU()
-
-#     def forward(self, x):
-#         x = self.leaky_relu(self.hidden(x))
-#         x = F.log_softmax(self.output(x), dim=1) 
-#         return x
+    def forward(self, x):
+        x = F.relu(self.fc1(x))
+        return self.fc2(x)  # No softmax; skorch handles that
 
 ###################################################################################################
 ###################################################################################################
@@ -485,44 +474,17 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                 new_preds = learned_model.predict_proba(all_scores)[:, 1]
 
             if supervised_method == 'NeuralNet':
-            
-                mlp = MLPClassifier(hidden_layer_sizes=(max(50,3*np.shape(X_curr)[1]),max(50,3*np.shape(X_curr)[1])), max_iter=200, random_state=42)
-                learned_model = mlp.fit(all_labeled_scores, Y_lab)
-                new_preds = learned_model.predict_proba(all_scores)[:, 1]
-
-
-
-            # if supervised_method == 'NeuralNet':
-            #     r0 = 1 - tau_exp  # expected proportion of class 0
-            #     weights = {0: r0, 1: 1 - r0}
+                from skorch import NeuralNetClassifier
                 
-            #     # Create sample weights array based on current labeled data
-            #     sample_weights = np.array([weights[label] for label in Y_lab])
-                
-            #     mlp = MLPClassifier(
-            #         hidden_layer_sizes=(max(50, 3 * np.shape(X_curr)[1]), max(50, 3 * np.shape(X_curr)[1])),
-            #         max_iter=200,
-            #         random_state=42
-            #     )
-    
-            #     learned_model = mlp.fit(all_labeled_scores, Y_lab, sample_weight=sample_weights)
-            #     new_preds = learned_model.predict_proba(all_scores)[:, 1]
-
-            # if supervised_method == 'NeuralNet':
-            
-            #     net = MyNeuralNetClassifier(
-            #         module=CustomNet,
-            #         module__input_dim=all_labeled_scores.shape[1],
-            #         max_epochs=20,
-            #         lr=0.001,
-            #         optimizer=torch.optim.Adam,
-            #         iterator_train__shuffle=True,
-            #         verbose=0,
-            #         device='cuda' if torch.cuda.is_available() else 'cpu'
-            #     )
-            
-            #     learned_model = net.fit(all_labeled_scores.astype(np.float32), np.array(Y_lab).astype(np.longlong))
-            #     new_preds = learned_model.predict_proba(all_scores.astype(np.float32))[:, 0]
+                net = NeuralNetClassifier(
+                    SimpleNN,
+                    module__input_dim=all_labeled_scores.shape[1],
+                    max_epochs=20,
+                    lr=0.01,
+                    verbose=0
+                )
+                learned_model = net.fit(all_labeled_scores.astype(np.float32), Y_lab.astype(np.longlong))
+                new_preds = learned_model.predict_proba(all_scores.astype(np.float32))[:, 1]
                 
                 
 
@@ -625,56 +587,20 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                 X_training=curr_all_labeled_scores, y_training=curr_Y_lab
                 )
 
-            # if supervised_method == 'NeuralNet':
-            #     # Compute sample weights for current training labels
-            #     r0 = 1 - tau_exp
-            #     weights = {0: r0, 1: 1 - r0}
-            #     sample_weights = np.array([weights[label] for label in curr_Y_lab])
-            
-            #     learner = ActiveLearner(
-            #         estimator=MLPClassifier(
-            #             hidden_layer_sizes=(max(50, 3 * np.shape(X_curr)[1]), max(50, 3 * np.shape(X_curr)[1])), 
-            #             max_iter=200,
-            #             random_state=42,
-            #             warm_start=True
-            #         ),
-            #         query_strategy=margin_sampling,
-            #         X_training=curr_all_labeled_scores,
-            #         y_training=curr_Y_lab,
-            #         fit_kwargs={'sample_weight': sample_weights}
-            #     )
-
             if supervised_method == 'NeuralNet':
                 learner = ActiveLearner(
-                    estimator=MLPClassifier(
-                        hidden_layer_sizes=(max(50,3*np.shape(X_curr)[1]),max(50,3*np.shape(X_curr)[1])), 
-                        max_iter=200,
-                        random_state=42,
-                        warm_start=True 
+                    estimator=NeuralNetClassifier(
+                        SimpleNN,
+                        module__input_dim=curr_all_labeled_scores.shape[1],
+                        max_epochs=20,
+                        lr=0.01,
+                        verbose=0
                     ),
                     query_strategy=margin_sampling,
-                    X_training=curr_all_labeled_scores,
-                    y_training=curr_Y_lab
+                    X_training=curr_all_labeled_scores.astype(np.float32),
+                    y_training=curr_Y_lab.astype(np.longlong)
                 )
-
-            # if supervised_method == 'NeuralNet':
-            #     learner = ActiveLearner(
-            #         estimator=NeuralNetClassifier(
-            #             module=CustomNet,
-            #             module__input_dim=curr_all_labeled_scores.shape[1],
-            #             max_epochs=20,
-            #             lr=0.001,
-            #             optimizer=torch.optim.Adam,
-            #             iterator_train__shuffle=True,
-            #             verbose=0,
-            #             device='cuda' if torch.cuda.is_available() else 'cpu'
-            #         ),
-            #         query_strategy=margin_sampling,
-            #         X_training=curr_all_labeled_scores.astype(np.float32),
-            #         y_training=curr_Y_lab.astype(np.longlong)
-            #     )
-                
-            
+        
                 
             #Since we want to do active learning using the modAL package, unfortunately it only 
             #outputs one candidate at a time, so there is a whole lot of work to do to make sure
