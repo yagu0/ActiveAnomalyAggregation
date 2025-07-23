@@ -483,9 +483,13 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                     lr=0.01,
                     verbose=0
                 )
-                learned_model = net.fit(all_labeled_scores.astype(np.float32), Y_lab.astype(np.longlong))
-                new_preds = learned_model.predict_proba(all_scores.astype(np.float32))[:, 1]
                 
+                learned_model = net.fit(
+                    all_labeled_scores.astype(np.float32),
+                    np.asarray(Y_lab, dtype=np.int64)  
+                )
+                new_preds = learned_model.predict_proba(all_scores.astype(np.float32))[:, 1]
+                                
                 
 
             
@@ -598,7 +602,7 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                     ),
                     query_strategy=margin_sampling,
                     X_training=curr_all_labeled_scores.astype(np.float32),
-                    y_training=curr_Y_lab.astype(np.longlong)
+                    y_training=np.asarray(curr_Y_lab, dtype=np.int64)  # <- Local, safe conversion
                 )
         
                 
