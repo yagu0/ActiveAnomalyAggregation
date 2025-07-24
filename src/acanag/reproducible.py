@@ -85,7 +85,7 @@ class SimpleNN(nn.Module):
         self.net = nn.Sequential(
             nn.Linear(input_dim, hidden_dim),
             nn.LeakyReLU(0.1),
-            nn.Dropout(0.1),
+            #nn.Dropout(0.1),
 
             nn.Linear(hidden_dim, hidden_dim2),
             nn.LeakyReLU(0.1),
@@ -562,7 +562,7 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                 net = NeuralNetClassifier(
                     SimpleNN,
                     module__input_dim=all_labeled_scores.shape[1],
-                    max_epochs=100,
+                    max_epochs=30,
                     lr=0.01,
                     verbose=0,
                     callbacks=[],
