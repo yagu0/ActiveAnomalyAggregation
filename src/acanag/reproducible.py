@@ -14,13 +14,13 @@ import tensorflow as tf
 from .glad import custom_binary_crossentropy_loss
 from .loda_utils import LODA_OAT
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from skorch import NeuralNetClassifier
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
-from scipy.stats import zscore
+# import torch
+# import torch.nn as nn
+# import torch.nn.functional as F
+# from skorch import NeuralNetClassifier
+# from sklearn.pipeline import make_pipeline
+# from sklearn.preprocessing import StandardScaler
+# from scipy.stats import zscore
 
 
 ###################################################################################################
@@ -75,34 +75,34 @@ from scipy.stats import zscore
 #     def forward(self, x):
 #         return self.net(x)
 
-class SimpleNN(nn.Module):
-    def __init__(self, input_dim, hidden_dim=None):
-        super(SimpleNN, self).__init__()
-        if hidden_dim is None:
-            hidden_dim = max(50, 3 * input_dim)
-        hidden_dim2 = max(30, hidden_dim // 2)  # second hidden layer smaller
+# class SimpleNN(nn.Module):
+#     def __init__(self, input_dim, hidden_dim=None):
+#         super(SimpleNN, self).__init__()
+#         if hidden_dim is None:
+#             hidden_dim = max(50, 3 * input_dim)
+#         hidden_dim2 = max(30, hidden_dim // 2)  # second hidden layer smaller
 
-        self.net = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
-            nn.LeakyReLU(0.1),
-            #nn.Dropout(0.1),
+#         self.net = nn.Sequential(
+#             nn.Linear(input_dim, hidden_dim),
+#             nn.LeakyReLU(0.1),
+#             #nn.Dropout(0.1),
 
-            nn.Linear(hidden_dim, hidden_dim2),
-            nn.LeakyReLU(0.1),
-            #nn.Dropout(0.1),
+#             nn.Linear(hidden_dim, hidden_dim2),
+#             nn.LeakyReLU(0.1),
+#             #nn.Dropout(0.1),
 
-            nn.Linear(hidden_dim2, 2)
-        )
+#             nn.Linear(hidden_dim2, 2)
+#         )
 
-        # Custom weight initialization
-        for m in self.net:
-            if isinstance(m, nn.Linear):
-                nn.init.kaiming_normal_(m.weight)
-                if m.bias is not None:
-                    nn.init.constant_(m.bias, 0)
+#         # Custom weight initialization
+#         for m in self.net:
+#             if isinstance(m, nn.Linear):
+#                 nn.init.kaiming_normal_(m.weight)
+#                 if m.bias is not None:
+#                     nn.init.constant_(m.bias, 0)
 
-    def forward(self, x):
-        return self.net(x)
+#     def forward(self, x):
+#         return self.net(x)
 
 ###################################################################################################
 ###################################################################################################
@@ -526,7 +526,8 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
 
                 r0 = 1-tau_exp  # Proportion of class 0 expected
                 weights = {0: r0, 1: 1 - r0}
-                RFC = RandomForestClassifier(class_weight=weights)
+                #RFC = RandomForestClassifier(class_weight=weights)
+                RFC = RandomForestClassifier(class_weight='balanced')
                 learned_model = RFC.fit(all_labeled_scores, Y_lab)
                 # Predicted probabilities for the positive class
                 new_preds = learned_model.predict_proba(all_scores)[:, 1]
@@ -545,39 +546,39 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                 # Predicted probabilities for the positive class
                 new_preds = learned_model.predict_proba(all_scores)[:, 1]
 
-            if supervised_method == 'NeuralNet':
+            # if supervised_method == 'NeuralNet':
 
-                # Step 1: Convert Y_lab and compute class weights
-                y_array = np.asarray(Y_lab, dtype=np.int64)
-                class_counts = np.bincount(y_array)
-                total = class_counts.sum()
-                class_weights = total / (2.0 * class_counts)
-                class_weights_tensor = torch.tensor(class_weights, dtype=torch.float32)
+            #     # Step 1: Convert Y_lab and compute class weights
+            #     y_array = np.asarray(Y_lab, dtype=np.int64)
+            #     class_counts = np.bincount(y_array)
+            #     total = class_counts.sum()
+            #     class_weights = total / (2.0 * class_counts)
+            #     class_weights_tensor = torch.tensor(class_weights, dtype=torch.float32)
             
-                # Step 2: Z-score normalize the labeled scores and all scores independently
-                all_labeled_scores_norm = zscore(all_labeled_scores, axis=0)
-                all_scores_norm = zscore(all_scores, axis=0)
+            #     # Step 2: Z-score normalize the labeled scores and all scores independently
+            #     all_labeled_scores_norm = zscore(all_labeled_scores, axis=0)
+            #     all_scores_norm = zscore(all_scores, axis=0)
             
-                # Step 3: Define model with weighted loss
-                net = NeuralNetClassifier(
-                    SimpleNN,
-                    module__input_dim=all_labeled_scores.shape[1],
-                    max_epochs=30,
-                    lr=0.01,
-                    verbose=0,
-                    callbacks=[],
-                    train_split=None,
-                    criterion=nn.CrossEntropyLoss,
-                    criterion__weight=class_weights_tensor
-                )
+            #     # Step 3: Define model with weighted loss
+            #     net = NeuralNetClassifier(
+            #         SimpleNN,
+            #         module__input_dim=all_labeled_scores.shape[1],
+            #         max_epochs=30,
+            #         lr=0.01,
+            #         verbose=0,
+            #         callbacks=[],
+            #         train_split=None,
+            #         criterion=nn.CrossEntropyLoss,
+            #         criterion__weight=class_weights_tensor
+            #     )
             
-                learned_model = net.fit(
-                    all_labeled_scores_norm.astype(np.float32),
-                    y_array
-                )
+            #     learned_model = net.fit(
+            #         all_labeled_scores_norm.astype(np.float32),
+            #         y_array
+            #     )
             
-                # Predict probabilities on normalized scores
-                new_preds = learned_model.predict_proba(all_scores_norm.astype(np.float32))[:, 1]
+            #     # Predict probabilities on normalized scores
+            #     new_preds = learned_model.predict_proba(all_scores_norm.astype(np.float32))[:, 1]
                                             
                 
 
@@ -659,8 +660,8 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                 r0 = 1-tau_exp  # Proportion of class 0 expected
                 weights = {0: r0, 1: 1 - r0}
                 learner = ActiveLearner(
-                #estimator=RandomForestClassifier(class_weight='balanced'),
-                estimator=RandomForestClassifier(class_weight=weights),
+                estimator=RandomForestClassifier(class_weight='balanced'),
+                #estimator=RandomForestClassifier(class_weight=weights),
                 #query_strategy=uncertainty_sampling,
                 query_strategy = margin_sampling,
                 #query_strategy = entropy_sampling,
@@ -680,39 +681,39 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                 X_training=curr_all_labeled_scores, y_training=curr_Y_lab
                 )
 
-            if supervised_method == 'NeuralNet':
+            # if supervised_method == 'NeuralNet':
     
-                # Step 1: Convert labels to NumPy array
-                y_array = np.asarray(curr_Y_lab, dtype=np.int64)
+            #     # Step 1: Convert labels to NumPy array
+            #     y_array = np.asarray(curr_Y_lab, dtype=np.int64)
                 
-                # Step 2: Compute class weights
-                class_counts = np.bincount(y_array)
-                total = class_counts.sum()
-                class_weights = total / (2.0 * class_counts)
-                class_weights_tensor = torch.tensor(class_weights, dtype=torch.float32)
+            #     # Step 2: Compute class weights
+            #     class_counts = np.bincount(y_array)
+            #     total = class_counts.sum()
+            #     class_weights = total / (2.0 * class_counts)
+            #     class_weights_tensor = torch.tensor(class_weights, dtype=torch.float32)
                 
-                # Minimal change: normalize the training features here
-                curr_all_labeled_scores_norm = zscore(curr_all_labeled_scores, axis=0)
+            #     # Minimal change: normalize the training features here
+            #     curr_all_labeled_scores_norm = zscore(curr_all_labeled_scores, axis=0)
                 
-                estimator = NeuralNetClassifier(
-                    SimpleNN,
-                    module__input_dim=curr_all_labeled_scores.shape[1],
-                    max_epochs=20,
-                    lr=0.01,
-                    verbose=0,
-                    callbacks=[],
-                    train_split=None,
-                    criterion=nn.CrossEntropyLoss,           
-                    criterion__weight=class_weights_tensor      
-                )
+            #     estimator = NeuralNetClassifier(
+            #         SimpleNN,
+            #         module__input_dim=curr_all_labeled_scores.shape[1],
+            #         max_epochs=20,
+            #         lr=0.01,
+            #         verbose=0,
+            #         callbacks=[],
+            #         train_split=None,
+            #         criterion=nn.CrossEntropyLoss,           
+            #         criterion__weight=class_weights_tensor      
+            #     )
                 
-                # Create ActiveLearner with normalized training data
-                learner = ActiveLearner(
-                    estimator=estimator,
-                    query_strategy=margin_sampling,
-                    X_training=curr_all_labeled_scores_norm.astype(np.float32),
-                    y_training=y_array
-                )
+            #     # Create ActiveLearner with normalized training data
+            #     learner = ActiveLearner(
+            #         estimator=estimator,
+            #         query_strategy=margin_sampling,
+            #         X_training=curr_all_labeled_scores_norm.astype(np.float32),
+            #         y_training=y_array
+            #     )
         
                 
             #Since we want to do active learning using the modAL package, unfortunately it only 
