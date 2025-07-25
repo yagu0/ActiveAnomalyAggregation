@@ -195,7 +195,7 @@ def InitActiveAGG(X_old = None,Y_old = None,n_data_min = 100, models=None):
                     
                     for i, (name, model) in enumerate(models.items()):
                         model.fit(X_old)
-                        print(X_old.shape)
+                        print('X_old:',X_old)
                         y_score = model.score_samples(X_old)
                         y_score.dtype = np.float64
                         print('Y score shape:',np.shape(y_score))
