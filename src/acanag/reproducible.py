@@ -208,7 +208,8 @@ def InitActiveAGG(X_old = None,Y_old = None,n_data_min = 100, models=None):
                     for i, (name, model) in enumerate(models.items()):
                         print(f"\nModel: {name}")
                         print("X_old shape before fit:", X_old.shape)
-                    
+
+                        print(f"Model: {name} | Is LOF: {isinstance(model, LocalOutlierFactor)} | novelty: {getattr(model, 'novelty', 'N/A')}")
                         model.fit(X_old)
                         y_score = model.score_samples(X_old)
                     
