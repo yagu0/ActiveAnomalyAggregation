@@ -193,15 +193,36 @@ def InitActiveAGG(X_old = None,Y_old = None,n_data_min = 100, models=None):
                     if len(models.items()) == 0:
                         raise ValueError('We require a non-empty dictionary called "models" in order to run unsupervised anomaly detection models.')      
                     
+                    # for i, (name, model) in enumerate(models.items()):
+                    #     model.fit(X_old)
+                    #     print('X old size:',np.shape(X_old))
+                    #     print('X_old:',X_old)
+                    #     y_score = model.score_samples(X_old)
+                    #     y_score.dtype = np.float64
+                    #     print('Y scores:',y_score)
+                    #     print('Y score shape:',np.shape(y_score))
+                    #     all_scores[:,i] = y_score.squeeze()
+
                     for i, (name, model) in enumerate(models.items()):
-                        model.fit(X_old)
-                        print('X old size:',np.shape(X_old))
-                        print('X_old:',X_old)
-                        y_score = model.score_samples(X_old)
+                        print(f"\nModel: {name}")
+                        print("X_old shape before fit:", X_old.shape)
+                    
+                        # Special handling for LOF to avoid the shape issue
+                        if name == "LocalOutlierFactor":
+                            model = LocalOutlierFactor(novelty=True)  # reinitialize LOF
+                            model.fit(X_old)
+                            y_score = model.score_samples(X_old)  # should now be shape (100,)
+                        else:
+                            model.fit(X_old)
+                            y_score = model.score_samples(X_old)
+                    
+                        print("y_score shape:", y_score.shape)
+                    
+                        if y_score.shape[0] != all_scores.shape[0]:
+                            raise ValueError(f"Model {name} returned wrong number of scores: {y_score.shape[0]} instead of {all_scores.shape[0]}")
+                    
                         y_score.dtype = np.float64
-                        print('Y scores:',y_score)
-                        print('Y score shape:',np.shape(y_score))
-                        all_scores[:,i] = y_score.squeeze()
+                        all_scores[:, i] = y_score.squeeze()
 
                     
                     # We then extract the subset of the array with the scores for the labeled data:
