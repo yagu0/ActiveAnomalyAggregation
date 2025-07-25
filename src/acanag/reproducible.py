@@ -214,6 +214,7 @@ def InitActiveAGG(X_old = None,Y_old = None,n_data_min = 100, models=None):
                         y_score = model.score_samples(X_old)
                     
                         print("y_score shape:", y_score.shape)
+                        print('y_score values:',y_score)
                     
                         if y_score.shape[0] != all_scores.shape[0]:
                             raise ValueError(f"Model {name} returned wrong number of scores: {y_score.shape[0]} instead of {all_scores.shape[0]}")
