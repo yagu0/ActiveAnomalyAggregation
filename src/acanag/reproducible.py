@@ -226,6 +226,7 @@ def InitActiveAGG(X_old = None,Y_old = None,n_data_min = 100, models=None):
                         yscoresqueeze = y_score.squeeze()
                         print("y_score squeeze shape:", yscoresqueeze.shape)
                         print('y_score squeeze values:',yscoresqueeze)
+                        print('Current shape of all_scores:',np.shape(all_scores))
                         all_scores[:, i] = y_score.squeeze()
 
                     
