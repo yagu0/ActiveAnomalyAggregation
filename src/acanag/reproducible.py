@@ -219,7 +219,8 @@ def InitActiveAGG(X_old = None,Y_old = None,n_data_min = 100, models=None):
                         if y_score.shape[0] != all_scores.shape[0]:
                             raise ValueError(f"Model {name} returned wrong number of scores: {y_score.shape[0]} instead of {all_scores.shape[0]}")
                     
-                        y_score.dtype = np.float64
+                        #y_score.dtype = np.float64
+                        y_score = y_score.astype(np.float64)
                         print("y_score shape:", y_score.shape)
                         print('y_score values:',y_score)
                         yscoresqueeze = y_score.squeeze()
