@@ -198,6 +198,7 @@ def InitActiveAGG(X_old = None,Y_old = None,n_data_min = 100, models=None):
                         print('X_old:',X_old)
                         y_score = model.score_samples(X_old)
                         y_score.dtype = np.float64
+                        print('Y scores:',y_score)
                         print('Y score shape:',np.shape(y_score))
                         all_scores[:,i] = y_score.squeeze()
 
