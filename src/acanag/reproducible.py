@@ -203,7 +203,7 @@ def InitActiveAGG(X_old = None,Y_old = None,n_data_min = 100, models=None):
                     #     print('Y score shape:',np.shape(y_score))
                     #     all_scores[:,i] = y_score.squeeze()
 
-                    models["LocalOutlierFactor"] = LocalOutlierFactor(novelty=True)
+                    #models["LocalOutlierFactor"] = LocalOutlierFactor(novelty=True)
 
                     for i, (name, model) in enumerate(models.items()):
                         print(f"\nModel: {name}")
