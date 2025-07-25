@@ -527,7 +527,8 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
         for i, (name, model) in enumerate(models.items()):
             model.fit(X_curr)
             y_score = model.score_samples(X_curr)
-            y_score.dtype = np.float64
+            #y_score.dtype = np.float64
+            y_score = y_score.astype(np.float64)
             all_scores[:,i] = y_score.squeeze()
         
         # For simplicity, we only keep the scores corresponding to new data:
