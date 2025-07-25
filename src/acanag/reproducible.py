@@ -203,30 +203,14 @@ def InitActiveAGG(X_old = None,Y_old = None,n_data_min = 100, models=None):
                     #     print('Y score shape:',np.shape(y_score))
                     #     all_scores[:,i] = y_score.squeeze()
 
-                    #models["LocalOutlierFactor"] = LocalOutlierFactor(novelty=True)
 
                     for i, (name, model) in enumerate(models.items()):
-                        print(f"\nModel: {name}")
-                        print("X_old shape before fit:", X_old.shape)
-
-                        print(f"Model: {name} | Is LOF: {isinstance(model, LocalOutlierFactor)} | novelty: {getattr(model, 'novelty', 'N/A')}")
                         model.fit(X_old)
                         y_score = model.score_samples(X_old)
-                    
-                        print("y_score shape:", y_score.shape)
-                        print('y_score values:',y_score)
-                    
                         if y_score.shape[0] != all_scores.shape[0]:
                             raise ValueError(f"Model {name} returned wrong number of scores: {y_score.shape[0]} instead of {all_scores.shape[0]}")
-                    
                         #y_score.dtype = np.float64
                         y_score = y_score.astype(np.float64)
-                        print("y_score shape:", y_score.shape)
-                        print('y_score values:',y_score)
-                        yscoresqueeze = y_score.squeeze()
-                        print("y_score squeeze shape:", yscoresqueeze.shape)
-                        print('y_score squeeze values:',yscoresqueeze)
-                        print('Current shape of all_scores:',np.shape(all_scores))
                         all_scores[:, i] = y_score.squeeze()
 
                     
