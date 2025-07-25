@@ -203,18 +203,14 @@ def InitActiveAGG(X_old = None,Y_old = None,n_data_min = 100, models=None):
                     #     print('Y score shape:',np.shape(y_score))
                     #     all_scores[:,i] = y_score.squeeze()
 
+                    models["LocalOutlierFactor"] = LocalOutlierFactor(novelty=True)
+
                     for i, (name, model) in enumerate(models.items()):
                         print(f"\nModel: {name}")
                         print("X_old shape before fit:", X_old.shape)
                     
-                        # Special handling for LOF to avoid the shape issue
-                        if name == "LocalOutlierFactor":
-                            model = LocalOutlierFactor(novelty=True)  # reinitialize LOF
-                            model.fit(X_old)
-                            y_score = model.score_samples(X_old)  # should now be shape (100,)
-                        else:
-                            model.fit(X_old)
-                            y_score = model.score_samples(X_old)
+                        model.fit(X_old)
+                        y_score = model.score_samples(X_old)
                     
                         print("y_score shape:", y_score.shape)
                     
