@@ -627,7 +627,7 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
             else:
                 supervised_indices = []
 
-            print('Supervised indices:',supervised_indices)
+            #print('Supervised indices:',supervised_indices)
             
             #sorted_indices = sorted(range(len(new_preds)), key=lambda k: new_preds[k])
             #supervised_indices = sorted_indices[-n_top:] 
@@ -758,11 +758,11 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
 
                 # Get the actual index:
                 actual_index = true_indices[query_idx]
-                print('Actual index:',actual_index)
+                #print('Actual index:',actual_index)
 
                 # See whether it was already in supervised_indices and if so, skip it.
                 if actual_index in supervised_indices:
-                    print('It was a repeat')
+                    #print('It was a repeat')
                     #Remove this index from true_indices:
                     del true_indices[query_idx]
                     # Remove this guy from the data and loop back:
