@@ -1454,7 +1454,7 @@ def ActiveAGG_3(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labe
 
                 r0 = 1-tau_exp  # Proportion of class 0 expected
                 weights = {0: 1 - r0, 1: r0}
-                RFC = RandomForestClassifier(class_weight=weights,max_depth=5)
+                RFC = RandomForestClassifier(class_weight=weights,max_depth=10)
                 learned_model = RFC.fit(all_labeled_scores, Y_lab)
                 # Predicted probabilities for the positive class
                 new_preds = learned_model.predict_proba(all_scores)[:, 1]
@@ -1552,7 +1552,7 @@ def ActiveAGG_3(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labe
                 weights = {0: 1-r0, 1: r0}
                 learner = ActiveLearner(
                 #estimator=RandomForestClassifier(class_weight='balanced'),
-                estimator=RandomForestClassifier(class_weight=weights,max_depth=5),
+                estimator=RandomForestClassifier(class_weight=weights,max_depth=10),
                 #query_strategy=uncertainty_sampling,
                 query_strategy = margin_sampling,
                 #query_strategy = entropy_sampling,
