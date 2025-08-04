@@ -1549,7 +1549,7 @@ def ActiveAGG_3(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labe
             # Set up the chosen active learning strategy (default in modAL is uncertainty sampling)
             if supervised_method == 'RandomForestClassifier':
                 r0 = 1-tau_exp  # Proportion of class 0 expected
-                weights = {0: r0, 1: 1 - r0}
+                weights = {0: 1-r0, 1: r0}
                 learner = ActiveLearner(
                 #estimator=RandomForestClassifier(class_weight='balanced'),
                 estimator=RandomForestClassifier(class_weight=weights),
