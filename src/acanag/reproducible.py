@@ -1453,7 +1453,7 @@ def ActiveAGG_3(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labe
                 #to an expert.
 
                 r0 = 1-tau_exp  # Proportion of class 0 expected
-                weights = {0: r0, 1: 1 - r0}
+                weights = {0: 1 - r0, 1: r0}
                 RFC = RandomForestClassifier(class_weight=weights)
                 learned_model = RFC.fit(all_labeled_scores, Y_lab)
                 # Predicted probabilities for the positive class
