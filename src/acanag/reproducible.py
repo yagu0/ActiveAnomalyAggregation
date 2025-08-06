@@ -551,11 +551,10 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                 #print('new_preds',new_preds)
 
             if supervised_method == 'LogisticRegression':
-                #r0 = 1-tau_exp  # Proportion of class 0 expected
-                #weights = {0: r0, 1: 1 - r0}          
-                #LRC = LogisticRegression(class_weight=weights)
-                #LRC = LogisticRegression(class_weight='balanced',penalty='l2')
-                LRC = LogisticRegression(class_weight='balanced')
+                r0 = 1-tau_exp  # Proportion of class 0 expected
+                weights = {0: 1-r0, 1: r0}          
+                LRC = LogisticRegression(class_weight=weights)
+                #LRC = LogisticRegression(class_weight='balanced')
                 
                 learned_model = LRC.fit(all_labeled_scores, Y_lab)
                 # Predicted probabilities for the positive class
