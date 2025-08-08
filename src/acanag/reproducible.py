@@ -9,6 +9,7 @@ from sklearn.svm import OneClassSVM
 from sklearn.ensemble import IsolationForest
 from sklearn.neighbors import LocalOutlierFactor
 from sklearn.neural_network import MLPClassifier
+from sklearn.utils import resample
 from modAL.models import ActiveLearner
 from modAL.uncertainty import * 
 import tensorflow as tf
