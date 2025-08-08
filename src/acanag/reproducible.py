@@ -566,8 +566,8 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                 yy = np.array(Y_lab)
             
                 # Separate the classes
-                X_min = XX[y == 1]
-                X_maj = XX[y == 0]
+                X_min = XX[yy == 1]
+                X_maj = XX[yy == 0]
             
                 if len(X_min) == 0 or len(X_maj) == 0:
                     # Avoid crashing if only one class is present
