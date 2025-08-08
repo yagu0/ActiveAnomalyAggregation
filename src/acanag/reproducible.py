@@ -8,6 +8,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import OneClassSVM
 from sklearn.ensemble import IsolationForest
 from sklearn.neighbors import LocalOutlierFactor
+from sklearn.neural_network import MLPClassifier
 from modAL.models import ActiveLearner
 from modAL.uncertainty import * 
 import tensorflow as tf
