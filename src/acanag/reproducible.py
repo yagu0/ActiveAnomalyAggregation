@@ -562,16 +562,36 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                 new_preds = learned_model.predict_proba(all_scores)[:, 1]
 
             if supervised_method == 'MLPClassifier':
-                from sklearn.utils.class_weight import compute_sample_weight
-                # Compute sample weights if needed
-                sample_weights = compute_sample_weight(class_weight='balanced', y=Y_lab)
-                # Set up MLPClassifier (you can adjust hidden_layer_sizes, etc.)
+                XX = all_labeled_scores
+                yy = np.array(Y_lab)
+            
+                # Separate the classes
+                X_min = XX[y == 1]
+                X_maj = XX[y == 0]
+            
+                if len(X_min) == 0 or len(X_maj) == 0:
+                    # Avoid crashing if only one class is present
+                    X_bal = XX
+                    y_bal = yy
+                else:
+                    # Upsample the minority class
+                    X_min_upsampled = resample(
+                        X_min,
+                        replace=True,
+                        n_samples=len(X_maj),
+                        random_state=42
+                    )
+                    y_min_upsampled = np.ones(len(X_maj))
+            
+                    # Combine upsampled minority with majority class
+                    X_bal = np.vstack([X_maj, X_min_upsampled])
+                    y_bal = np.hstack([np.zeros(len(X_maj)), y_min_upsampled])
+            
+                # Train the MLPClassifier on the balanced dataset
                 MLP = MLPClassifier(hidden_layer_sizes=(100,), max_iter=500, random_state=42)
+                learned_model = MLP.fit(X_bal, y_bal)
             
-                # Fit with sample weights
-                learned_model = MLP.fit(all_labeled_scores, Y_lab, sample_weight=sample_weights)
-            
-                # Predicted probabilities for the positive class (class 1)
+                # Predict probabilities on the full (possibly unbalanced) new dataset
                 new_preds = learned_model.predict_proba(all_scores)[:, 1]
 
             #     # Step 1: Convert Y_lab and compute class weights
