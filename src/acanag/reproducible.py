@@ -589,7 +589,7 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                     y_bal = np.hstack([np.zeros(len(X_maj)), y_min_upsampled])
             
                 # Train the MLPClassifier on the balanced dataset
-                MLP = MLPClassifier(hidden_layer_sizes=(100,), max_iter=500, random_state=42)
+                MLP = MLPClassifier()
                 learned_model = MLP.fit(X_bal, y_bal)
             
                 # Predict probabilities on the full (possibly unbalanced) new dataset
