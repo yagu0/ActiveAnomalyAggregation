@@ -539,8 +539,8 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                 #But afterwards we really want to treat it as regression in order to propose candidates
                 #to an expert.
 
-                r0 = 1-tau_exp  # Proportion of class 0 expected
-                weights = {0: 1-r0, 1: r0}
+                #r0 = 1-tau_exp  # Proportion of class 0 expected
+                #weights = {0: 1-r0, 1: r0}
                 #RFC = RandomForestClassifier(class_weight=weights)
                 RFC = RandomForestClassifier(class_weight='balanced')
                 learned_model = RFC.fit(all_labeled_scores, Y_lab)
@@ -560,7 +560,18 @@ def ActiveAGG(X_new = None, X_old = None, X_lab = None, Y_lab = None, all_labele
                 # Predicted probabilities for the positive class
                 new_preds = learned_model.predict_proba(all_scores)[:, 1]
 
-            # if supervised_method == 'NeuralNet':
+            if supervised_method == 'MLPClassifier':
+                from sklearn.utils.class_weight import compute_sample_weight
+                # Compute sample weights if needed
+                sample_weights = compute_sample_weight(class_weight='balanced', y=Y_lab)
+                # Set up MLPClassifier (you can adjust hidden_layer_sizes, etc.)
+                MLP = MLPClassifier(hidden_layer_sizes=(100,), max_iter=500, random_state=42)
+            
+                # Fit with sample weights
+                learned_model = MLP.fit(all_labeled_scores, Y_lab, sample_weight=sample_weights)
+            
+                # Predicted probabilities for the positive class (class 1)
+                new_preds = learned_model.predict_proba(all_scores)[:, 1]
 
             #     # Step 1: Convert Y_lab and compute class weights
             #     y_array = np.asarray(Y_lab, dtype=np.int64)
